@@ -8,8 +8,7 @@ class Role extends Model
 {
     // Laravel ya infiere el nombre de la tabla a partir del nombre del modelo, pero no importa, lo declaramos de todos modos por consistencia 
     protected $table = 'roles';
-    protected $primaryKey = 'role_id';
-    // Eloquent asume por defecto que la PK es un valor entero y autoincremental
+    // Eloquent asume por defecto que la PK es un valor entero y autoincremental llamado "id"
 
     protected $fillable = [
         'name',
@@ -21,12 +20,12 @@ class Role extends Model
 
     public function users() // plural porque un rol puede tener muchos usuarios
     {
-        // return $this->hasMany(User::class, 'role_id', 'role_id');
+        return $this->hasMany(User::class);
     }
 
     public function getRouteKeyName()
     {
-        return 'role_id';
+        return 'id';
         // Laravel usa la PK como RouteKey por defecto, pero lo dejaremos tambien por consistencia 
     }
 }
