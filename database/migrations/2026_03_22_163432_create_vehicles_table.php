@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('vehicle_type', 50);
             $table->unsignedTinyInteger('capacity');
             $table->string('fuel_type', 50);
-            $table->string('image_path', 255)->nullable();
+            $table->string('image_path', 255);
             $table->enum('status', ['available', 'reserved', 'maintenance', 'out_of_service'])->default('available');
             $table->unsignedInteger('current_mileage')->default(0);
             $table->timestamps();
