@@ -11,23 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('travel_routes', function (Blueprint $table) {
             $table->id();
-            $table->string('full_name', 150);
-            $table->string('email', 255)->unique();
-            $table->string('phone', 20)->nullable();
-            $table->foreignId('role_id')->constrained('roles');
-            $table->string('password', 255);
+            $table->string('name', 150);
+            $table->string('start_point', 150);
+            $table->string('end_point', 150);
+            $table->decimal('estimated_distance', 8, 2)->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('travel_routes');
     }
 };

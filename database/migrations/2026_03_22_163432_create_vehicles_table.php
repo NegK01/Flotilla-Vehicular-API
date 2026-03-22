@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->string('plate')->unique();
-            $table->string('brand');
-            $table->string('model');
-            $table->integer('year');
-            $table->string('vehicle_type');
-            $table->integer('capacity');
-            $table->string('fuel_type');
-            $table->string('image_path');
+            $table->string('plate', 20)->unique();
+            $table->string('brand', 100);
+            $table->string('model', 100);
+            $table->unsignedSmallInteger('year');
+            $table->string('vehicle_type', 50);
+            $table->unsignedTinyInteger('capacity');
+            $table->string('fuel_type', 50);
+            $table->string('image_path', 255)->nullable();
             $table->enum('status', ['available', 'reserved', 'maintenance', 'out_of_service'])->default('available');
             $table->unsignedInteger('current_mileage')->default(0);
             $table->timestamps();
