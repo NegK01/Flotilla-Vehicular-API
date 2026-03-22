@@ -53,6 +53,11 @@ class Vehicle extends Model
         return $this->hasMany(Trip::class);
     }
 
+    public function maintenances(): HasMany
+    {
+        return $this->hasMany(Maintenance::class);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'id';
