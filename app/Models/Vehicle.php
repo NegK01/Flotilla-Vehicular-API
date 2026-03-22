@@ -10,6 +10,11 @@ class Vehicle extends Model
 {
     use SoftDeletes;
 
+    public const STATUS_AVAILABLE = 'available';
+    public const STATUS_RESERVED = 'reserved';
+    public const STATUS_MAINTENANCE = 'maintenance';
+    public const STATUS_OUT_OF_SERVICE = 'out_of_service';
+
     protected $table = 'vehicles';
 
     protected $fillable = [
