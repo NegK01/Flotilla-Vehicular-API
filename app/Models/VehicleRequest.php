@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VehicleRequest extends Model
@@ -44,19 +45,24 @@ class VehicleRequest extends Model
         'request_type' => 'string',
     ];
 
-    public function driver()
+    public function driver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'driver_id');
     }
 
-    public function vehicle()
+    public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function approver()
+    public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function trip(): HasOne
+    {
+        return $this->hasOne(Trip::class);
     }
 
     public function getRouteKeyName(): string

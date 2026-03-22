@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vehicle extends Model
 {
@@ -43,7 +43,17 @@ class Vehicle extends Model
         'current_mileage' => 'integer',
     ];
 
-    public function getRouteKeyName()
+    public function vehicleRequests(): HasMany
+    {
+        return $this->hasMany(VehicleRequest::class);
+    }
+
+    public function trips(): HasMany
+    {
+        return $this->hasMany(Trip::class);
+    }
+
+    public function getRouteKeyName(): string
     {
         return 'id';
     }
