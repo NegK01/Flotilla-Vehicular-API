@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -15,17 +16,17 @@ class Role extends Model
     ];
 
     protected $casts = [
-        'name' => 'string'
+        'name' => 'string',
     ];
 
-    public function users() // plural porque un rol puede tener muchos usuarios
+    // [: HasMany] Tipado fuerte: se especifica que dato se esta devolviendo
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    public function getRouteKeyName()
+    public function getRouteKeyName(): string
     {
-        return 'id';
-        // Laravel usa la PK como RouteKey por defecto, pero lo dejaremos tambien por consistencia 
+        return 'id'; // ya se intuye que es la PK pero tambien lo dejamos por consistencia 
     }
 }

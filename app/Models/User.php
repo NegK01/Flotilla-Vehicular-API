@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Model
+class User extends Authenticatable
 {
     use SoftDeletes;
 
@@ -26,14 +28,31 @@ class User extends Model
         'role_id' => 'integer',
     ];
 
-    public function role()
+    protected $hidden = [
+        'password',
+    ];
+
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
-    // Agregar las demas relaciones cuando ya existan
+    public function vehicleRequests(): HasMany
+    {
+        return $this->hasMany(VehicleRequest::class, 'driver_id');
+    }
 
-    public function getRouteKeyName()
+    public function approvedVehicleRequests(): HasMany
+    {
+        return $this->hasMany(VehicleRequest::class, 'approved_by');
+    }
+
+    public function trips(): HasMany
+    {
+        return $this->hasMany(Trip::class, 'driver_id');
+    }
+
+    public function getRouteKeyName(): string
     {
         return 'id';
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TravelRoute extends Model
@@ -26,6 +27,11 @@ class TravelRoute extends Model
         'estimated_distance' => 'decimal:2',
         'description' => 'string',
     ];
+
+    public function trips(): HasMany
+    {
+        return $this->hasMany(Trip::class);
+    }
 
     public function getRouteKeyName(): string
     {
