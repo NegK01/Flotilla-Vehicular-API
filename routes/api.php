@@ -3,6 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+use App\Http\Controllers\UserController;
+
+Route::apiResource('user', UserController::class)->missing(function (Request $request) {
+    return response()->json([
+        'message' => 'Usuario no encontrado',
+    ], 404);
+});
+Route::patch('user/{id}/restore', [UserController::class, 'restore']);
