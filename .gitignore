@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
