@@ -3,8 +3,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehicleController;
+
+Route::apiResource('roles', RoleController::class)->missing(function (Request $request) {
+    return response()->json([
+        'message' => 'Rol no encontrado',
+    ], 404);
+});
 
 Route::apiResource('users', UserController::class)->missing(function (Request $request) {
     return response()->json([
@@ -13,5 +20,9 @@ Route::apiResource('users', UserController::class)->missing(function (Request $r
 });
 Route::patch('users/{id}/restore', [UserController::class, 'restore']);
 
-Route::get('roles',        [RoleController::class, 'index']);
-Route::get('roles/{role}', [RoleController::class, 'show']);
+Route::apiResource('vehicles', VehicleController::class)->missing(function (Request $request) {
+    return response()->json([
+        'message' => 'Vehiculo no encontrado',
+    ], 404);
+});
+Route::patch('vehicles/{id}/restore', [VehicleController::class, 'restore']);

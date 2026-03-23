@@ -22,7 +22,7 @@ class UpdateVehicleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'plate' => 'sometimes|string|max:20|unique:vehicles,plate,' . $this->route('vehicle'),
+            'plate' => 'sometimes|string|max:20|unique:vehicles,plate,' . $this->route('vehicle')->id,
             'brand' => 'sometimes|string|max:100',
             'model' => 'sometimes|string|max:100',
             'year' => 'sometimes|integer|min:1900|max:2100',
