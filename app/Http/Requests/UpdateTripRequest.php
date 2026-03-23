@@ -11,7 +11,7 @@ class UpdateTripRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,15 @@ class UpdateTripRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'vehicle_request_id' => 'sometimes|exists:vehicle_requests,id',
+            'driver_id' => 'sometimes|exists:users,id',
+            'vehicle_id' => 'sometimes|exists:vehicles,id',
+            'travel_route_id' => 'sometimes|exists:travel_routes,id',
+            'departure_at' => 'sometimes|date',
+            'return_at' => 'sometimes|date|after:departure_at',
+            'departure_mileage' => 'sometimes|integer|min:0',
+            'return_mileage' => 'sometimes|integer|min:departure_mileage',
+            'observations' => 'sometimes|string',
         ];
     }
 }

@@ -11,7 +11,7 @@ class UpdateMaintenanceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,13 @@ class UpdateMaintenanceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'vehicle_id' => 'sometimes|exists:vehicles,id',
+            'type' => 'sometimes|in:preventive,corrective',
+            'start_at' => 'sometimes|date',
+            'closed_at' => 'sometimes|date|after:start_at',
+            'description' => 'sometimes|string',
+            'cost' => 'sometimes|numeric|min:0|max:99999999.99',
+            'status' => 'sometimes|in:open,closed',
         ];
     }
 }

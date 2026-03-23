@@ -11,7 +11,7 @@ class StoreMaintenanceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,13 @@ class StoreMaintenanceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'type' => 'required|in:preventive,corrective',
+            'start_at' => 'required|date',
+            'closed_at' => 'nullable|date|after:start_at',
+            'description' => 'required|string',
+            'cost' => 'nullable|numeric|min:0|max:99999999.99',
+            'status' => 'nullable|in:open,closed',
         ];
     }
 }
