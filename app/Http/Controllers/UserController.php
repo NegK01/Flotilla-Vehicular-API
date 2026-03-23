@@ -31,8 +31,8 @@ class UserController extends Controller
         $user = User::create($request->validated());
 
         return response()->json([
-            'message' => 'Usuario creado correctamente',
-            'data' => $user->load('role')
+            'message' => 'Usuario creado correctamente.',
+            'data' => $user->load('role'),
         ], 201);
     }
 
@@ -42,7 +42,10 @@ class UserController extends Controller
     public function show(User $user)
     {
         //
-        return response()->json($user->load('role'), 200);
+        return response()->json([
+            'message' => 'Usuario seleccionado:',
+            'data' => $user->load('role'),
+        ], 200);
     }
 
     /**
@@ -68,7 +71,8 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json([
-            'message' => 'Usuario desactivado correctamente',
+            'message' => 'Usuario desactivado correctamente.',
+            'data' => $user->fresh()->load('role'),
         ], 200);
     }
 
@@ -79,7 +83,7 @@ class UserController extends Controller
 
         if (!$user) {
             return response()->json([
-                'message' => 'No se pudo reactivar el ususario',
+                'message' => 'No se pudo reactivar el ususario.',
             ], 404);
         }
 

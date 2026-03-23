@@ -34,7 +34,10 @@ class RoleController extends Controller
     public function show(Role $role)
     {
         //
-        return response()->json($role, 200);
+        return response()->json([
+            'message' => 'Rol seleccionado:',
+            'data' => $role,
+        ], 200);
     }
 
     /**
