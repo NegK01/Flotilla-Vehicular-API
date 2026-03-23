@@ -12,6 +12,12 @@ class RoleController extends Controller
     public function index()
     {
         //
+        $roles = Role::latest()->paginate(10);
+
+        return response()->json([
+            'message' => 'Lista de roles seleccionados:',
+            'data' => $roles,
+        ], 200);
     }
 
     /**
@@ -28,6 +34,7 @@ class RoleController extends Controller
     public function show(Role $role)
     {
         //
+        return response()->json($role, 200);
     }
 
     /**
