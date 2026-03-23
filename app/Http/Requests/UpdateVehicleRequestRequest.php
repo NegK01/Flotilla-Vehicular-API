@@ -11,7 +11,7 @@ class UpdateVehicleRequestRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,15 @@ class UpdateVehicleRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'driver_id' => 'sometimes|exists:users,id',
+            'vehicle_id' => 'sometimes|exists:vehicles,id',
+            'start_at' => 'sometimes|date|after:now',
+            'end_at' => 'sometimes|date|after:start_at',
+            'status' => 'sometimes|in:pending,approved,rejected,cancelled',
+            'observation' => 'sometimes|nullable|string',
+            'approved_by' => 'sometimes|exists:users,id',
+            'approved_at' => 'sometimes|date',
+            'request_type' => 'sometimes|in:driver_request,direct_assignment',
         ];
     }
 }

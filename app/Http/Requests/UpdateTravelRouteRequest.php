@@ -11,7 +11,7 @@ class UpdateTravelRouteRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,11 @@ class UpdateTravelRouteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'sometimes|string|max:150',
+            'start_point' => 'sometimes|string|max:150',
+            'end_point' => 'sometimes|string|max:150',
+            'estimated_distance' => 'sometimes|numeric|min:0|max:999999.99',
+            'description' => 'sometimes|string',
         ];
     }
 }
