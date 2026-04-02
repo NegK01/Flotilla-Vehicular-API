@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use Illuminate\Http\Request;
 use App\Models\User;
 
 class UserController extends Controller
@@ -11,10 +12,21 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
-        $users = User::with('role')->whereNull('deleted_at')->latest()->paginate(10);
+        $request->validate([
+            'role' => ['nullable', 'integer', 'in:1,2,3'],
+            'trashed' => ['nullable', 'in:only,with'],
+        ]);
+
+        $query = User::with('role:id,name')
+            ->latest()
+            ->when($request->role, fn($q) => $q->where('role_id', $request->role))
+            ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
+            ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
+
+        $users = $query->paginate(10);
 
         return response()->json([
             'message' => 'Lista de usuarios seleccionados:',
@@ -32,7 +44,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario creado correctamente.',
-            'data' => $user->load('role'),
+            'data' => $user->load('role:id,name'),
         ], 201);
     }
 
@@ -44,7 +56,7 @@ class UserController extends Controller
         //
         return response()->json([
             'message' => 'Usuario seleccionado:',
-            'data' => $user->load('role'),
+            'data' => $user->load('role:id,name'),
         ], 200);
     }
 
@@ -58,7 +70,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario actualizado correctamente.',
-            'data' => $user->fresh()->load('role'),
+            'data' => $user->fresh()->load('role:id,name'),
         ], 200);
     }
 
@@ -72,7 +84,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario desactivado correctamente.',
-            'data' => $user->fresh()->load('role'),
+            'data' => $user->fresh()->load('role:id,name'),
         ], 200);
     }
 
@@ -91,7 +103,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario reactivado correctamente.',
-            'data' => $user->fresh()->load('role'),
+            'data' => $user->fresh()->load('role:id,name'),
         ], 200);
     }
 }

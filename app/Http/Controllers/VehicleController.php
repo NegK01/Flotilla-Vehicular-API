@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVehicleRequest;
 use App\Http\Requests\UpdateVehicleRequest;
+use Illuminate\Http\Request;
 use App\Models\Vehicle;
 
 class VehicleController extends Controller
@@ -11,10 +12,29 @@ class VehicleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
-        $vehicles = Vehicle::latest()->paginate(10);
+        $request->validate([
+            'status' => [
+                'nullable', 
+                'string',
+                'in:' . implode(',', [
+                    Vehicle::STATUS_AVAILABLE,
+                    Vehicle::STATUS_RESERVED,
+                    Vehicle::STATUS_MAINTENANCE,
+                    Vehicle::STATUS_OUT_OF_SERVICE,
+                ]),
+            ],
+            'trashed' => ['nullable', 'in:only,with'],
+        ]);
+
+        $query = Vehicle::latest()
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
+            ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
+
+        $vehicles = $query->paginate(10);
 
         return response()->json([
             'message' => 'Lista de vehiculos seleccionados:',
@@ -32,7 +52,7 @@ class VehicleController extends Controller
 
         return response()->json([
             'message' => 'Vehiculo creado correctamente.',
-            'data' => $vehicle
+            'data' => $vehicle,
         ], 201);
     }
 
