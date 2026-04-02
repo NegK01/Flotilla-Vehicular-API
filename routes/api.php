@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\TripController;
 
 Route::apiResource('roles', RoleController::class)->missing(function (Request $request) {
@@ -28,9 +29,12 @@ Route::apiResource('vehicles', VehicleController::class)->missing(function (Requ
 });
 Route::patch('vehicles/{id}/restore', [VehicleController::class, 'restore']);
 
-
-
-
+Route::apiResource('maintenances', MaintenanceController::class)->missing(function (Request $request) {
+    return response()->json([
+        'message' => 'Mantenimiento no encontrado.',
+    ], 404);
+});
+Route::patch('maintenances/{id}/restore', [MaintenanceController::class, 'restore']);
 
 
 

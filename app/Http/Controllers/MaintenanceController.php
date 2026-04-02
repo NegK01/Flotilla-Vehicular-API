@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMaintenanceRequest;
 use App\Http\Requests\UpdateMaintenanceRequest;
+use Illuminate\Http\Request;
 use App\Models\Maintenance;
 
 class MaintenanceController extends Controller
@@ -11,9 +12,41 @@ class MaintenanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
+        $request->validate([
+            'type' => [
+                'nullable',
+                'string',
+                'in:' . implode(',', [
+                    Maintenance::TYPE_PREVENTIVE,
+                    Maintenance::TYPE_CORRECTIVE,
+                ]),
+            ],
+            'status' => [
+                'nullable',
+                'string',
+                'in:' . implode(',', [
+                    Maintenance::STATUS_OPEN,
+                    Maintenance::STATUS_CLOSED,
+                ]),
+            ],
+            'trashed' => ['nullable', 'in:only,with'],
+        ]);
+
+        $query = Maintenance::latest()
+            ->when($request->type,   fn($q) => $q->where('type',   $request->type))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
+            ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
+
+        $maintenance = $query->paginate(10);
+
+        return response()->json([
+            'message' => 'Lista de mantenimientos seleccionados:',
+            'data' => $maintenance,
+        ], 200);
     }
 
     /**
@@ -22,6 +55,12 @@ class MaintenanceController extends Controller
     public function store(StoreMaintenanceRequest $request)
     {
         //
+        $maintenance = Maintenance::create($request->validated());
+
+        return response()->json([
+            'message' => 'Mantenimiento creado correctamente.',
+            'data' => $maintenance,
+        ], 201);
     }
 
     /**
@@ -30,6 +69,10 @@ class MaintenanceController extends Controller
     public function show(Maintenance $maintenance)
     {
         //
+        return response()->json([
+            'message' => 'Mantenimiento seleccionado:',
+            'data' => $maintenance->load('vehicle:id,plate,brand,model,year'),
+        ], 200);
     }
 
     /**
@@ -38,6 +81,12 @@ class MaintenanceController extends Controller
     public function update(UpdateMaintenanceRequest $request, Maintenance $maintenance)
     {
         //
+        $maintenance->update($request->validated());
+
+        return response()->json([
+            'message' => 'Mantenimiento actualizado correctamente.',
+            'data' => $maintenance->fresh(),
+        ], 200);
     }
 
     /**
@@ -46,5 +95,30 @@ class MaintenanceController extends Controller
     public function destroy(Maintenance $maintenance)
     {
         //
+        $maintenance->delete();
+
+        return response()->json([
+            'message' => 'Mantenimiento desactivado correctamente.',
+            'data' => $maintenance->fresh(),
+        ], 200);
+    }
+
+    public function restore($id)
+    {
+        //
+        $mantenance = Maintenance::onlyTrashed()->find($id);
+
+        if (!$mantenance) {
+            return response()->json([
+                'message' => 'No se pudo reactivar el mantenimiento.',
+            ], 404);
+        }
+
+        $mantenance->restore();
+
+        return response()->json([
+            'message' => 'Mantenimiento reactivado correctamente.',
+            'data' => $mantenance->fresh(),
+        ], 200);
     }
 }
