@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->string('plate', 20)->unique();
+            $table->string('plate', 20);
             $table->string('brand', 100);
             $table->string('model', 100);
             $table->unsignedSmallInteger('year');
@@ -26,6 +27,12 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
+
+        DB::statement("
+            CREATE UNIQUE INDEX vehicles_plate_active_unique
+            ON vehicles (plate)
+            WHERE deleted_at IS NULL
+        ");
     }
 
     /**
@@ -33,6 +40,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement("DROP INDEX IF EXISTS vehicles_plate_active_unique");
         Schema::dropIfExists('vehicles');
     }
 };

@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email' => 'string',
         'phone' => 'string',
         'role_id' => 'integer',
+        'password' => 'hashed',
     ];
 
     protected $hidden = [
@@ -42,9 +43,9 @@ class User extends Authenticatable
         return $this->hasMany(VehicleRequest::class, 'driver_id');
     }
 
-    public function approvedVehicleRequests(): HasMany
+    public function reviewedVehicleRequests(): HasMany
     {
-        return $this->hasMany(VehicleRequest::class, 'approved_by');
+        return $this->hasMany(VehicleRequest::class, 'reviewed_by');
     }
 
     public function trips(): HasMany

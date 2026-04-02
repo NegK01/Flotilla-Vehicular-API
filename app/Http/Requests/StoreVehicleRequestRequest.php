@@ -28,8 +28,8 @@ class StoreVehicleRequestRequest extends FormRequest
             'end_at' => 'required|date|after:start_at',
             'status' => 'nullable|in:pending,approved,rejected,cancelled',
             'observation' => 'nullable|string',
-            'approved_by' => 'nullable|exists:users,id',
-            'approved_at' => 'nullable|date',
+            'reviewed_by' => 'nullable|exists:users,id',
+            'reviewed_at' => 'nullable|date',
             'request_type' => 'nullable|in:driver_request,direct_assignment',
         ];
     }

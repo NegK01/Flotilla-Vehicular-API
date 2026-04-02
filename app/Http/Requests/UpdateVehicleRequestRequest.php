@@ -28,8 +28,8 @@ class UpdateVehicleRequestRequest extends FormRequest
             'end_at' => 'sometimes|date|after:start_at',
             'status' => 'sometimes|in:pending,approved,rejected,cancelled',
             'observation' => 'sometimes|nullable|string',
-            'approved_by' => 'sometimes|exists:users,id',
-            'approved_at' => 'sometimes|date',
+            'reviewed_by' => 'sometimes|exists:users,id',
+            'reviewed_at' => 'sometimes|date',
             'request_type' => 'sometimes|in:driver_request,direct_assignment',
         ];
     }

@@ -28,8 +28,8 @@ class VehicleRequest extends Model
         'end_at',
         'status',
         'observation',
-        'approved_by',
-        'approved_at',
+        'reviewed_by',
+        'reviewed_at',
         'request_type',
     ];
 
@@ -40,8 +40,8 @@ class VehicleRequest extends Model
         'end_at' => 'datetime',
         'status' => 'string',
         'observation' => 'string',
-        'approved_by' => 'integer',
-        'approved_at' => 'datetime',
+        'reviewed_by' => 'integer',
+        'reviewed_at' => 'datetime',
         'request_type' => 'string',
     ];
 
@@ -55,9 +55,9 @@ class VehicleRequest extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function approver(): BelongsTo
+    public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function trip(): HasOne
