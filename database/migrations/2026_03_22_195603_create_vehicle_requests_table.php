@@ -19,8 +19,8 @@ return new class extends Migration
             $table->dateTime('end_at');
             $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
             $table->text('observation')->nullable();
-            $table->foreignId('approved_by')->nullable()->constrained('users');
-            $table->dateTime('approved_at')->nullable();
+            $table->foreignId('reviewed_by')->nullable()->constrained('users');
+            $table->dateTime('reviewed_at')->nullable();
             $table->enum('request_type', ['driver_request', 'direct_assignment'])->default('driver_request');
             $table->timestamps();
             $table->softDeletes();
