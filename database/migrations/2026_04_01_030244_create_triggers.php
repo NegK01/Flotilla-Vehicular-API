@@ -220,11 +220,11 @@ return new class extends Migration
 
         // HACK: Trigger 5
         // - Al registrar un regreso del viaje, actualizar kilometraje y determinar el estado del vehículo
-        // - IDs omitidos:
-        //      - id <> NEW.id en trips (excluye el viaje que se está tratando de regresar)
-        //      - (IS NULL OR id <> NEW.vehicle_request_id) en vehicle_requests (excluye la solicitud del viaje actual)
         // - Tanto solicitudes aprobadas como otros viajes activos significan que el vehículo sigue reservado
         // - El kilometraje siempre se actualiza sin importar el estado del vehículo
+        // - IDs omitidos: 
+        //                  - id <> NEW.vehicle_request_id en vehicle_requests (esto para evitar que el contador sume la solicitud que esta asociada al viaje pues seguramente se encuentre aprobada)
+        //                  - id <> NEW.id en trips (esto para evitar que el contador sume la cancelacion que se esta tratando de hacer)
         DB::statement("
             CREATE OR REPLACE FUNCTION fn_update_vehicle_mileage_on_return()
             RETURNS TRIGGER AS $$
@@ -257,7 +257,7 @@ return new class extends Migration
                         FROM vehicle_requests
                         WHERE vehicle_id = NEW.vehicle_id
                             AND status = 'approved'
-                            AND (NEW.vehicle_request_id IS NULL OR id <> NEW.vehicle_request_id)
+                            AND id <> NEW.vehicle_request_id
                             AND deleted_at IS NULL;
 
                         -- En la teoria, no deberia existir este contador ni validacion, pues el sistema deberia de bloquear el uso de un mismo vehiculo para más de 1 viaje, si se hace, este bloque debe de ser eliminado

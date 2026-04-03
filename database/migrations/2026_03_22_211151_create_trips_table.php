@@ -14,7 +14,7 @@ return new class extends Migration
         // FK[vehicle_request_id] = el enunciado de viajes dice que la salida/devolución debe quedar asociada a una asignación o solicitud aprobada. Entonces esta FK permite saber de qué solicitud aprobada nació el viaje
         Schema::create('trips', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vehicle_request_id')->nullable()->constrained('vehicle_requests');
+            $table->foreignId('vehicle_request_id')->constrained('vehicle_requests');
             $table->foreignId('driver_id')->constrained('users');
             $table->foreignId('vehicle_id')->constrained('vehicles');
             $table->foreignId('travel_route_id')->nullable()->constrained('travel_routes');
