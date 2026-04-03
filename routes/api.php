@@ -7,7 +7,9 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\TravelRouteController;
 use App\Http\Controllers\TripController;
+use App\Models\TravelRoute;
 
 Route::apiResource('roles', RoleController::class)->missing(function (Request $request) {
     return response()->json([
@@ -35,6 +37,13 @@ Route::apiResource('maintenances', MaintenanceController::class)->missing(functi
     ], 404);
 });
 Route::patch('maintenances/{id}/restore', [MaintenanceController::class, 'restore']);
+
+Route::apiResource('travelRoutes', TravelRouteController::class)->missing(function (Request $request) {
+    return response()->json([
+        'message' => 'Viaje no encontrado.',
+    ], 404);
+});
+Route::patch('travelRoute/{id}/restore', [TravelRouteController::class, 'restore']);
 
 
 
