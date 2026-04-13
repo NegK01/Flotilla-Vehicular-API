@@ -9,7 +9,11 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\TravelRouteController;
 use App\Http\Controllers\TripController;
+use App\Http\Controllers\AuthController;
 use App\Models\TravelRoute;
+
+Route::post('login', [AuthController::class, 'login']);
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::apiResource('roles', RoleController::class)->missing(function (Request $request) {
     return response()->json([
@@ -17,12 +21,22 @@ Route::apiResource('roles', RoleController::class)->missing(function (Request $r
     ], 404);
 });
 
-Route::apiResource('users', UserController::class)->missing(function (Request $request) {
-    return response()->json([
-        'message' => 'Usuario no encontrado.',
-    ], 404);
+Route::apiResource('users', UserController::class)
+    ->middleware('auth:sanctum')
+    ->middlewareFor('index', 'can:viewAny,App\Models\User')
+    ->middlewareFor('show', 'can:view,user')
+    ->middlewareFor('store', 'can:create,App\Models\User')
+    ->middlewareFor('update', 'can:update,user')
+    ->middlewareFor('destroy', 'can:delete,user')
+    ->missing(function (Request $request) {
+        return response()->json([
+            'message' => 'Usuario no encontrado.',
+        ], 404);
 });
-Route::patch('users/{id}/restore', [UserController::class, 'restore']);
+
+Route::patch('users/{user}/restore', [UserController::class, 'restore'])
+    ->withTrashed()
+    ->middleware(['auth:sanctum', 'can:restore,user']);
 
 Route::apiResource('vehicles', VehicleController::class)->missing(function (Request $request) {
     return response()->json([
@@ -44,10 +58,6 @@ Route::apiResource('travelRoutes', TravelRouteController::class)->missing(functi
     ], 404);
 });
 Route::patch('travelRoute/{id}/restore', [TravelRouteController::class, 'restore']);
-
-
-
-
 
 Route::apiResource('trips', TripController::class)->missing(function (Request $request) {
     return response()->json([
