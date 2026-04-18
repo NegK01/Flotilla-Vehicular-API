@@ -14,7 +14,7 @@ class VehiclePolicy
     public function viewAny(User $user): Response
     {
         // operacion ternaria condición ? valor_si_true : valor_si_false
-        return (int) $user->role_id === 1
+        return in_array((int) $user->role_id, [1, 2, 3], true)
             ? Response::allow()
             : Response::deny('You are not authorized to access the vehicles module.');
     }
@@ -24,7 +24,7 @@ class VehiclePolicy
      */
     public function view(User $user, Vehicle $model): Response
     {
-        return (int) $user->role_id === 1
+        return in_array((int) $user->role_id, [1, 2, 3], true)
             ? Response::allow()
             : Response::deny('You are not authorized to access the vehicles module.');
     }
