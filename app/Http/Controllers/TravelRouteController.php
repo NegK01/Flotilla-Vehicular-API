@@ -23,11 +23,11 @@ class TravelRouteController extends Controller
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
             ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
 
-        $TravelRoutes = $query->paginate(10);
+        $travelRoutes = $query->paginate(10);
 
         return response()->json([
             'message' => 'Lista de rutas seleccionadas:',
-            'data' => $TravelRoutes,
+            'data' => $travelRoutes,
         ], 200);
     }
 
