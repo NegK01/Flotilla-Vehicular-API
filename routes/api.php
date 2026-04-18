@@ -21,6 +21,8 @@ Route::apiResource('roles', RoleController::class)->missing(function (Request $r
     ], 404);
 });
 
+
+
 Route::apiResource('users', UserController::class)
     ->middleware('auth:sanctum')
     ->middlewareFor('index', 'can:viewAny,App\Models\User')
