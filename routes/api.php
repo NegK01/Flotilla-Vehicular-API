@@ -28,11 +28,10 @@ Route::apiResource('roles', RoleController::class)
     });
 
 
-Route::post('users', [UserController::class, 'store']);
 Route::apiResource('users', UserController::class)
-    ->except(['store'])
     ->middleware('auth:sanctum')
     ->middlewareFor('index', 'can:viewAny,App\Models\User')
+    ->middlewareFor('store', 'can:create,App\Models\User')
     ->middlewareFor('show', 'can:view,user')
     ->middlewareFor('update', 'can:update,user')
     ->middlewareFor('destroy', 'can:delete,user')
@@ -41,6 +40,7 @@ Route::apiResource('users', UserController::class)
             'message' => 'Usuario no encontrado.',
         ], 404);
     });
+Route::post('registerDriver', [AuthController::class, 'registerDriver']);
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])
     ->withTrashed()
     ->middleware(['auth:sanctum', 'can:restore,user']);

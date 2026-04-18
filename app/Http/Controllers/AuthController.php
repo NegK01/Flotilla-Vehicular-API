@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -45,5 +46,20 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logout exitoso.'
         ], 200);
+    }
+    public function registerDriver(RegisterUserRequest $request)
+    {
+        $user = User::create([
+            'full_name' => $request->full_name,
+            'email'     => $request->email,
+            'phone'     => $request->phone ?? null,
+            'role_id'   => 3,
+            'password'  => bcrypt($request->password),
+        ]);
+
+        return response()->json([
+            'message' => 'Usuario registrado exitosamente.',
+            'user'    => $user,
+        ], 201);
     }
 }
