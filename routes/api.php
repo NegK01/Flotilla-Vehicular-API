@@ -34,20 +34,28 @@ Route::apiResource('users', UserController::class)
         return response()->json([
             'message' => 'Usuario no encontrado.',
         ], 404);
-});
-
+    });
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])
     ->withTrashed()
     ->middleware(['auth:sanctum', 'can:restore,user']);
 
 
+Route::apiResource('vehicles', VehicleController::class)
+    ->middleware('auth:sanctum')
+    ->middlewareFor('index', 'can:viewAny,App\Models\Vehicle')
+    ->middlewareFor('show', 'can:view,vehicle')
+    ->middlewareFor('store', 'can:create,App\Models\Vehicle')
+    ->middlewareFor('update', 'can:update,vehicle')
+    ->middlewareFor('destroy', 'can:delete,vehicle')
+    ->missing(function (Request $request) {
+        return response()->json([
+            'message' => 'Vehiculo no encontrado.',
+        ], 404);
+    });
+Route::patch('vehicles/{vehicle}/restore', [VehicleController::class, 'restore'])
+    ->withTrashed()
+    ->middleware(['auth:sanctum', 'can:restore,vehicle']);
 
-Route::apiResource('vehicles', VehicleController::class)->missing(function (Request $request) {
-    return response()->json([
-        'message' => 'Vehiculo no encontrado.',
-    ], 404);
-});
-Route::patch('vehicles/{id}/restore', [VehicleController::class, 'restore']);
 
 Route::apiResource('maintenances', MaintenanceController::class)->missing(function (Request $request) {
     return response()->json([
