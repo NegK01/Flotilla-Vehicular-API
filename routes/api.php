@@ -21,18 +21,19 @@ Route::apiResource('roles', RoleController::class)->missing(function (Request $r
     ], 404);
 });
 
+Route::post('users', [UserController::class, 'store']);
 Route::apiResource('users', UserController::class)
+    ->except(['store'])
     ->middleware('auth:sanctum')
     ->middlewareFor('index', 'can:viewAny,App\Models\User')
     ->middlewareFor('show', 'can:view,user')
-    ->middlewareFor('store', 'can:create,App\Models\User')
     ->middlewareFor('update', 'can:update,user')
     ->middlewareFor('destroy', 'can:delete,user')
     ->missing(function (Request $request) {
         return response()->json([
             'message' => 'Usuario no encontrado.',
         ], 404);
-});
+    });
 
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])
     ->withTrashed()
