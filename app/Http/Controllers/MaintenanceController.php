@@ -35,7 +35,10 @@ class MaintenanceController extends Controller
             'trashed' => ['nullable', 'in:only,with'],
         ]);
 
-        $query = Maintenance::latest()
+        $query = Maintenance::with([
+            'vehicle:id,plate,brand,model,year,vehicle_type',
+        ])
+            ->latest()
             ->when($request->type,   fn($q) => $q->where('type',   $request->type))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
