@@ -15,12 +15,17 @@ use App\Http\Controllers\VehicleRequestController;
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::apiResource('roles', RoleController::class)->missing(function (Request $request) {
-    return response()->json([
-        'message' => 'Rol no encontrado.',
-    ], 404);
-});
 
+Route::apiResource('roles', RoleController::class)
+    ->only(['index', 'show'])
+    ->middleware('auth:sanctum')
+    ->middlewareFor('index', 'can:viewAny,App\Models\Role')
+    ->middlewareFor('show', 'can:view,role')
+    ->missing(function (Request $request) {
+        return response()->json([
+            'message' => 'Rol no encontrado.',
+        ], 404);
+    });
 
 
 Route::apiResource('users', UserController::class)
@@ -64,6 +69,7 @@ Route::apiResource('maintenances', MaintenanceController::class)->missing(functi
 });
 Route::patch('maintenances/{id}/restore', [MaintenanceController::class, 'restore']);
 
+
 Route::apiResource('travelRoutes', TravelRouteController::class)->missing(function (Request $request) {
     return response()->json([
         'message' => 'Viaje no encontrado.',
@@ -71,12 +77,14 @@ Route::apiResource('travelRoutes', TravelRouteController::class)->missing(functi
 });
 Route::patch('travelRoute/{id}/restore', [TravelRouteController::class, 'restore']);
 
+
 Route::apiResource('trips', TripController::class)->missing(function (Request $request) {
     return response()->json([
         'message' => 'Viaje no encontrado.',
     ], 404);
 });
 Route::patch('trips/{id}/restore', [TripController::class, 'restore']);
+
 
 Route::apiResource('vehicleRequest', VehicleRequestController::class)->missing(function (Request $request) {
     return response()->json([
