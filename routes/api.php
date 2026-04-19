@@ -13,6 +13,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VehicleRequestController;
 
 Route::post('login', [AuthController::class, 'login']);
+Route::post('registerDriver', [AuthController::class, 'registerDriver']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 
