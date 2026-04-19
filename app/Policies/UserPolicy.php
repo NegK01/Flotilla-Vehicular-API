@@ -15,7 +15,7 @@ class UserPolicy
         // operacion ternaria condición ? valor_si_true : valor_si_false
         return (int) $user->role_id === 1
             ? Response::allow()
-            : Response::deny('You are not authorized to access the users module.');
+            : Response::deny('El usuario no esta autorizado para ver informacion sobre usuarios.');
     }
 
     /**
@@ -25,46 +25,56 @@ class UserPolicy
     {
         return $user->id === $model->id || $user->role_id === 1
             ? Response::allow()
-            : Response::deny('You are not authorized to access the users module.');
+            : Response::deny('El usuario no esta autorizado para ver informacion sobre usuarios.');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): Response
     {
-        return (int) $user->role_id === 1;
+        return (int) $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para crear un usuario.');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, User $model): bool
+    public function update(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1;
+        return (int) $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para actualizar un usuario.');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, User $model): bool
+    public function delete(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1;
+        return (int) $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para desactivar un usuario.');
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, User $model): bool
+    public function restore(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1;
+        return (int) $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para reactivar un usuario.');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, User $model): bool
+    public function forceDelete(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1;
+        return (int) $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para eliminar un usuario.');
     }
 }

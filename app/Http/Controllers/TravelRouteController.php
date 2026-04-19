@@ -85,12 +85,10 @@ class TravelRouteController extends Controller
         ], 200);
     }
 
-    public function restore($id)
+    public function restore(TravelRoute $travelRoute)
     {
         //
-        $travelRoute = TravelRoute::onlyTrashed()->find($id);
-
-        if (!$travelRoute) {
+        if (!$travelRoute->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar la ruta.',
             ], 404);

@@ -96,12 +96,10 @@ class VehicleController extends Controller
         ], 200);
     }
 
-    public function restore($id)
+    public function restore(Vehicle $vehicle)
     {
         //
-        $vehicle = Vehicle::onlyTrashed()->find($id);
-
-        if (!$vehicle) {
+        if (!$vehicle->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar el vehiculo.',
             ], 404);

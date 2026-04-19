@@ -91,17 +91,9 @@ class UserController extends Controller
     public function restore(User $user)
     {
         //
-        // $user = User::onlyTrashed()->find($id);
-
-        // if (!$user) {
-        //     return response()->json([
-        //         'message' => 'No se pudo reactivar el ususario.',
-        //     ], 404);
-        // }
-
-        if (! $user->trashed()) {
+        if (!$user->trashed()) {
             return response()->json([
-                'message' => 'Usuario no encontrado o no está eliminado.',
+                'message' => 'No se pudo reactivar el ususario.',
             ], 404);
         }
 
