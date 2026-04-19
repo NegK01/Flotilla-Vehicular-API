@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateVehicleRequest extends FormRequest
 {
@@ -22,14 +23,21 @@ class UpdateVehicleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'plate' => 'sometimes|string|max:20|unique:vehicles,plate,' . $this->route('vehicle')->id,
+            'plate' => [
+                'sometimes',
+                'string',
+                'max:20',
+                Rule::unique('vehicles', 'plate')
+                    ->ignore($this->route('vehicle')?->id)
+                    ->whereNull('deleted_at'),
+            ],
             'brand' => 'sometimes|string|max:100',
             'model' => 'sometimes|string|max:100',
             'year' => 'sometimes|integer|min:1900|max:2100',
             'vehicle_type' => 'sometimes|string|max:50',
             'capacity' => 'sometimes|integer|min:1|max:255',
             'fuel_type' => 'sometimes|string|max:50',
-            'image_path' => 'sometimes|nullable|string|max:255',
+            'image_path' => 'sometimes|string|max:255',
             'status' => 'sometimes|in:available,reserved,maintenance,out_of_service',
             'current_mileage' => 'sometimes|integer|min:0',
         ];
