@@ -96,12 +96,10 @@ class TripController extends Controller
         ], 200);
     }
 
-    public function restore($id)
+    public function restore(Trip $trip)
     {
         //
-        $trip = Trip::onlyTrashed()->find($id);
-
-        if (!$trip) {
+        if (!$trip->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar el viaje.',
             ], 404);

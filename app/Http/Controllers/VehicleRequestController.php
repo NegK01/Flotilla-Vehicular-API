@@ -114,22 +114,20 @@ class VehicleRequestController extends Controller
         ], 200);
     }
 
-    public function restore($id)
+    public function restore(VehicleRequest $vehicleRequest)
     {
         //
-        $trip = VehicleRequest::onlyTrashed()->find($id);
-
-        if (!$trip) {
+        if (!$vehicleRequest->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar la solicitud.',
             ], 404);
         }
 
-        $trip->restore();
+        $vehicleRequest->restore();
 
         return response()->json([
             'message' => 'Solicitud reactivada correctamente.',
-            'data' => $trip->fresh(),
+            'data' => $vehicleRequest->fresh(),
         ], 200);
     }
 }

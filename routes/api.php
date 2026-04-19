@@ -62,12 +62,26 @@ Route::patch('vehicles/{vehicle}/restore', [VehicleController::class, 'restore']
     ->middleware(['auth:sanctum', 'can:restore,vehicle']);
 
 
-Route::apiResource('maintenances', MaintenanceController::class)->missing(function (Request $request) {
-    return response()->json([
-        'message' => 'Mantenimiento no encontrado.',
-    ], 404);
-});
-Route::patch('maintenances/{id}/restore', [MaintenanceController::class, 'restore']);
+Route::apiResource('maintenances', MaintenanceController::class)
+    ->middleware('auth:sanctum')
+    ->middlewareFor('index', 'can:viewAny,App\Models\Maintenance')
+    ->middlewareFor('show', 'can:view,maintenance')
+    ->middlewareFor('store', 'can:create,App\Models\Maintenance')
+    ->middlewareFor('update', 'can:update,maintenance')
+    ->middlewareFor('destroy', 'can:delete,maintenance')
+    ->missing(function (Request $request) {
+        return response()->json([
+            'message' => 'Mantenimiento no encontrado.',
+        ], 404);
+    });
+Route::patch('maintenances/{maintenance}/restore', [MaintenanceController::class, 'restore'])
+    ->withTrashed()
+    ->middleware(['auth:sanctum', 'can:restore,maintenance']);
+
+
+
+
+
 
 
 Route::apiResource('travelRoutes', TravelRouteController::class)->missing(function (Request $request) {

@@ -106,12 +106,10 @@ class MaintenanceController extends Controller
         ], 200);
     }
 
-    public function restore($id)
+    public function restore(Maintenance $mantenance)
     {
         //
-        $mantenance = Maintenance::onlyTrashed()->find($id);
-
-        if (!$mantenance) {
+        if (!$mantenance->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar el mantenimiento.',
             ], 404);
