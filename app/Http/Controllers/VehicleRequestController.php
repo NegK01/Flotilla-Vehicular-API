@@ -37,15 +37,18 @@ class VehicleRequestController extends Controller
             'trashed' => ['nullable', 'in:only,with'],
         ]);
 
+        $user = $request->user();
+
         $query = VehicleRequest::with([
             'driver:id,full_name',
             'vehicle:id,plate,brand,model,year,vehicle_type',
         ])
             ->latest()
-            ->when($request->type,   fn($q) => $q->where('type',   $request->type))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
-            ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
+            ->when($request->trashed === 'with', fn($q) => $q->withTrashed())
+            ->when($request->type,               fn($q) => $q->where('type',   $request->type))
+            ->when($request->status,             fn($q) => $q->where('status', $request->status))
+            ->when((int) $user->role_id === 3,   fn($q) => $q->where('driver_id', $user->id));
 
         $vehicleRequests = $query->paginate(10);
 

@@ -105,7 +105,7 @@ Route::apiResource('trips', TripController::class)
     ->middlewareFor('destroy', 'can:delete,trip')
     ->missing(function (Request $request) {
         return response()->json([
-            'message' => 'Viaje no encontrados.',
+            'message' => 'Viaje no encontrado.',
         ], 404);
     });
 Route::patch('trips/{trip}/restore', [TripController::class, 'restore'])
@@ -113,18 +113,18 @@ Route::patch('trips/{trip}/restore', [TripController::class, 'restore'])
     ->middleware(['auth:sanctum', 'can:restore,trip']);
 
 
-
-
-
-
-
-
-
-
-
-Route::apiResource('vehicleRequest', VehicleRequestController::class)->missing(function (Request $request) {
-    return response()->json([
-        'message' => 'Solicitud no encontrado.',
-    ], 404);
-});
-Route::patch('vehicleRequest/{id}/restore', [VehicleRequestController::class, 'restore']);
+Route::apiResource('vehicleRequests', VehicleRequestController::class)
+    ->middleware('auth:sanctum')
+    ->middlewareFor('index', 'can:viewAny,App\Models\VehicleRequest')
+    ->middlewareFor('show', 'can:view,vehicleRequest')
+    ->middlewareFor('store', 'can:create,App\Models\VehicleRequest')
+    ->middlewareFor('update', 'can:update,vehicleRequest')
+    ->middlewareFor('destroy', 'can:delete,vehicleRequest')
+    ->missing(function (Request $request) {
+        return response()->json([
+            'message' => 'Solicitud no encontrado.',
+        ], 404);
+    });
+Route::patch('vehicleRequests/{vehicleRequest}/restore', [VehicleRequestController::class, 'restore'])
+    ->withTrashed()
+    ->middleware(['auth:sanctum', 'can:restore,vehicleRequest']);
