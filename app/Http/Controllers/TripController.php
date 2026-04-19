@@ -19,6 +19,8 @@ class TripController extends Controller
             'trashed' => ['nullable', 'in:only,with'],
         ]);
 
+        $user = $request->user();
+
         $query = Trip::with([
             'driver:id,full_name',
             'vehicle:id,plate,brand,model,year,vehicle_type',
@@ -26,7 +28,8 @@ class TripController extends Controller
         ])
             ->latest()
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
-            ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
+            ->when($request->trashed === 'with', fn($q) => $q->withTrashed())
+            ->when((int) $user->role_id === 3,   fn($q) => $q->where('driver_id', $user->id));
 
         $trips = $query->paginate(10);
 
