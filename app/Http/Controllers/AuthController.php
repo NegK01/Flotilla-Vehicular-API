@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterDriverRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    private const DRIVER_ROLE_ID = 3;
+
     public function login(LoginRequest $request)
     {
         $credentials = $request->validated();
@@ -36,6 +39,19 @@ class AuthController extends Controller
             'access_token' => $token,
             'user' => $user->load('role'),
         ], 200);
+    }
+
+    public function registerDriver(RegisterDriverRequest $request)
+    {
+        $data = $request->validated();
+        $data['role_id'] = self::DRIVER_ROLE_ID;
+
+        $user = User::create($data);
+
+        return response()->json([
+            'message' => 'Usuario registrado exitosamente.',
+            'data' => $user->load('role:id,name'),
+        ], 201);
     }
 
     public function logout(Request $request)
