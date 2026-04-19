@@ -22,7 +22,7 @@ class StoreTripRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'vehicle_request_id' => 'nullable|exists:vehicle_requests,id',
+            'vehicle_request_id' => 'required|exists:vehicle_requests,id',
             'driver_id' => 'required|exists:users,id',
             'vehicle_id' => 'required|exists:vehicles,id',
             'travel_route_id' => 'nullable|exists:travel_routes,id',

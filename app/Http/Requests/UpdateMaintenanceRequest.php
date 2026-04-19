@@ -25,9 +25,9 @@ class UpdateMaintenanceRequest extends FormRequest
             'vehicle_id' => 'sometimes|exists:vehicles,id',
             'type' => 'sometimes|in:preventive,corrective',
             'start_at' => 'sometimes|date',
-            'closed_at' => 'sometimes|date|after:start_at',
+            'closed_at' => 'sometimes|nullable|date|after:start_at',
             'description' => 'sometimes|string',
-            'cost' => 'sometimes|numeric|min:0|max:99999999.99',
+            'cost' => 'sometimes|nullable|numeric|min:0|max:99999999.99',
             'status' => 'sometimes|in:open,closed',
         ];
     }

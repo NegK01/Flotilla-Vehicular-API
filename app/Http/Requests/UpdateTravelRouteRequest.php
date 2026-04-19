@@ -25,8 +25,8 @@ class UpdateTravelRouteRequest extends FormRequest
             'name' => 'sometimes|string|max:150',
             'start_point' => 'sometimes|string|max:150',
             'end_point' => 'sometimes|string|max:150',
-            'estimated_distance' => 'sometimes|numeric|min:0|max:999999.99',
-            'description' => 'sometimes|string',
+            'estimated_distance' => 'sometimes|nullable|numeric|min:0|max:999999.99',
+            'description' => 'sometimes|nullable|string',
         ];
     }
 }
