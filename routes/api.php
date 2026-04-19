@@ -79,17 +79,25 @@ Route::patch('maintenances/{maintenance}/restore', [MaintenanceController::class
     ->middleware(['auth:sanctum', 'can:restore,maintenance']);
 
 
+Route::apiResource('travelRoutes', TravelRouteController::class)
+    ->middleware('auth:sanctum')
+    ->middlewareFor('index', 'can:viewAny,App\Models\TravelRoute')
+    ->middlewareFor('show', 'can:view,travelRoute')
+    ->middlewareFor('store', 'can:create,App\Models\TravelRoute')
+    ->middlewareFor('update', 'can:update,travelRoute')
+    ->middlewareFor('destroy', 'can:delete,travelRoute')
+    ->missing(function (Request $request) {
+        return response()->json([
+            'message' => 'Ruta no encontrada.',
+        ], 404);
+    });
+Route::patch('travelRoutes/{travelRoute}/restore', [TravelRouteController::class, 'restore'])
+    ->withTrashed()
+    ->middleware(['auth:sanctum', 'can:restore,travelRoute']);
 
 
 
 
-
-Route::apiResource('travelRoutes', TravelRouteController::class)->missing(function (Request $request) {
-    return response()->json([
-        'message' => 'Viaje no encontrado.',
-    ], 404);
-});
-Route::patch('travelRoute/{id}/restore', [TravelRouteController::class, 'restore']);
 
 
 Route::apiResource('trips', TripController::class)->missing(function (Request $request) {
