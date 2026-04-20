@@ -10,6 +10,7 @@ use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\TravelRouteController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\VehicleRequestController;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -129,3 +130,7 @@ Route::apiResource('vehicleRequests', VehicleRequestController::class)
 Route::patch('vehicleRequests/{vehicleRequest}/restore', [VehicleRequestController::class, 'restore'])
     ->withTrashed()
     ->middleware(['auth:sanctum', 'can:restore,vehicleRequest']);
+
+
+Route::get('reports/drivers/{driver}/history', [ReportController::class, 'driverHistory'])
+    ->middleware(['auth:sanctum', 'can:viewDriverHistory,driver']);

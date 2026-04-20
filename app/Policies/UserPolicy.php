@@ -68,6 +68,13 @@ class UserPolicy
             : Response::deny('El usuario no esta autorizado para reactivar un usuario.');
     }
 
+    public function viewDriverHistory(User $user, User $driver): Response
+    {
+        return (int) $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para ver el reporte de historial del chofer.');
+    }
+
     /**
      * Determine whether the user can permanently delete the model.
      */
