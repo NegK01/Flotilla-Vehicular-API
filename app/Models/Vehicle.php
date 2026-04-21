@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 class Vehicle extends Model
 {
@@ -16,6 +18,10 @@ class Vehicle extends Model
     public const STATUS_OUT_OF_SERVICE = 'out_of_service';
 
     protected $table = 'vehicles';
+
+    protected $appends = [
+        'image_url',
+    ];
 
     protected $fillable = [
         'plate',
@@ -42,6 +48,15 @@ class Vehicle extends Model
         'status' => 'string',
         'current_mileage' => 'integer',
     ];
+
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::get(fn () => 
+            ($this->image_path && Storage::disk('public')->exists($this->image_path)) 
+                ? Storage::disk('public')->url($this->image_path) 
+                : asset('images/placeholder.png')
+        );
+    }
 
     public function vehicleRequests(): HasMany
     {

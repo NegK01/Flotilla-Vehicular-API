@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VehicleController extends Controller
 {
@@ -63,7 +64,13 @@ class VehicleController extends Controller
      */
     public function store(StoreVehicleRequest $request)
     {
-        $vehicle = Vehicle::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image_path')) {
+            $data['image_path'] = $request->file('image_path')->store('images/vehicles', 'public');
+        }
+
+        $vehicle = Vehicle::create($data);
 
         return response()->json([
             'message' => 'Vehiculo creado correctamente.',
@@ -87,7 +94,17 @@ class VehicleController extends Controller
      */
     public function update(UpdateVehicleRequest $request, Vehicle $vehicle)
     {
-        $vehicle->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image_path')) {
+            // Eliminar imagen anterior si existe
+            if ($vehicle->image_path) {
+                Storage::disk('public')->delete($vehicle->image_path);
+            }
+            $data['image_path'] = $request->file('image_path')->store('images/vehicles', 'public');
+        }
+
+        $vehicle->update($data);
 
         return response()->json([
             'message' => 'Vehiculo actualizado correctamente.',

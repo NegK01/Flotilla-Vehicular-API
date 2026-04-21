@@ -37,8 +37,11 @@ class UpdateVehicleRequest extends FormRequest
             'vehicle_type' => 'sometimes|string|max:50',
             'capacity' => 'sometimes|integer|min:1|max:255',
             'fuel_type' => 'sometimes|string|max:50',
-            'image_path' => 'sometimes|string|max:255',
-            'status' => 'sometimes|in:available,reserved,maintenance,out_of_service',
+            'image_path' => 'sometimes|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'status' => [
+                'sometimes',
+                Rule::in([Vehicle::STATUS_AVAILABLE, Vehicle::STATUS_OUT_OF_SERVICE]),
+            ],
             'current_mileage' => 'sometimes|integer|min:0',
         ];
     }
