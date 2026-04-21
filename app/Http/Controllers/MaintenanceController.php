@@ -102,7 +102,6 @@ class MaintenanceController extends Controller
 
         return response()->json([
             'message' => 'Mantenimiento desactivado correctamente.',
-            'data' => $maintenance->fresh(),
         ], 200);
     }
 

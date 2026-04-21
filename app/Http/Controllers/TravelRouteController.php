@@ -81,7 +81,6 @@ class TravelRouteController extends Controller
 
         return response()->json([
             'message' => 'Ruta desactivada correctamente.',
-            'data' => $travelRoute,
         ], 200);
     }
 

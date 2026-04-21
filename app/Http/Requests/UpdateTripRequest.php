@@ -23,13 +23,11 @@ class UpdateTripRequest extends FormRequest
     {
         return [
             'vehicle_request_id' => 'sometimes|exists:vehicle_requests,id',
-            'driver_id' => 'sometimes|exists:users,id',
-            'vehicle_id' => 'sometimes|exists:vehicles,id',
             'travel_route_id' => 'sometimes|nullable|exists:travel_routes,id',
             'departure_at' => 'sometimes|date',
             'return_at' => 'sometimes|nullable|date|after:departure_at',
             'departure_mileage' => 'sometimes|integer|min:0',
-            'return_mileage' => 'sometimes|nullable|integer|min:departure_mileage',
+            'return_mileage' => 'sometimes|nullable|integer|gte:departure_mileage',
             'observations' => 'sometimes|nullable|string',
         ];
     }

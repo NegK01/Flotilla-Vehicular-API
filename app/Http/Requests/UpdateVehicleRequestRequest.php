@@ -22,15 +22,10 @@ class UpdateVehicleRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'driver_id' => 'sometimes|exists:users,id',
-            'vehicle_id' => 'sometimes|exists:vehicles,id',
-            'start_at' => 'sometimes|date|after:now',
-            'end_at' => 'sometimes|date|after:start_at',
-            'status' => 'sometimes|in:pending,approved,rejected,cancelled',
-            'observation' => 'sometimes|nullable|string',
-            'reviewed_by' => 'sometimes|nullable|exists:users,id',
-            'reviewed_at' => 'sometimes|nullable|date',
-            'request_type' => 'sometimes|in:driver_request,direct_assignment',
+            'vehicle_id'  => 'sometimes|exists:vehicles,id',
+            'start_at'    => 'sometimes|date|after:now',
+            'end_at'      => 'sometimes|date|after:start_at',
+            'observation' => 'sometimes|nullable|string|max:500',
         ];
     }
 }

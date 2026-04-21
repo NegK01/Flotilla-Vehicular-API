@@ -124,12 +124,27 @@ Route::apiResource('vehicleRequests', VehicleRequestController::class)
     ->middlewareFor('destroy', 'can:delete,vehicleRequest')
     ->missing(function (Request $request) {
         return response()->json([
-            'message' => 'Solicitud no encontrado.',
+            'message' => 'Solicitud no encontrada.',
         ], 404);
     });
 Route::patch('vehicleRequests/{vehicleRequest}/restore', [VehicleRequestController::class, 'restore'])
     ->withTrashed()
     ->middleware(['auth:sanctum', 'can:restore,vehicleRequest']);
+
+    
+    
+Route::patch('vehicleRequests/{vehicleRequest}/approve', [VehicleRequestController::class, 'approve'])
+    ->middleware(['auth:sanctum', 'can:approve,vehicleRequest']);
+
+Route::patch('vehicleRequests/{vehicleRequest}/reject', [VehicleRequestController::class, 'reject'])
+    ->middleware(['auth:sanctum', 'can:reject,vehicleRequest']);
+
+Route::patch('vehicleRequests/{vehicleRequest}/cancel', [VehicleRequestController::class, 'cancel'])
+    ->middleware(['auth:sanctum', 'can:cancel,vehicleRequest']);
+
+Route::post('vehicleRequests/directAssignment', [VehicleRequestController::class, 'directAssignment'])
+    ->middleware(['auth:sanctum', 'can:directAssignment,App\Models\VehicleRequest']);
+
 
 
 Route::get('reports/drivers/{driver}/history', [ReportController::class, 'driverHistory'])

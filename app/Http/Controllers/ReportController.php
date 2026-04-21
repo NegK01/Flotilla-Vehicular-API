@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    // HACK: Reporte 3 
+    // Reporte 3 
     // Muestra solicitudes y viajes del chofer para consulta administrativa
     public function driverHistory(DriverHistoryReportRequest $request, User $driver)
     {
@@ -22,7 +22,7 @@ class ReportController extends Controller
 
         $validated = $request->validated();
         $start = Carbon::parse($validated['start_date'])->startOfDay();
-        $end = Carbon::parse($validated['end_date'])->endOfDay();
+        $end   = Carbon::parse($validated['end_date'])->endOfDay();
 
         $requestsHistory = DB::table('vehicle_requests as vr')
             ->select(
@@ -65,6 +65,7 @@ class ReportController extends Controller
                 't.return_at',
                 't.departure_mileage',
                 't.return_mileage',
+                DB::raw('COALESCE(t.return_mileage - t.departure_mileage, 0) AS km_driven'),
                 't.observations',
                 'v.id as vehicle_id',
                 'v.plate',
@@ -101,17 +102,17 @@ class ReportController extends Controller
             'message' => 'Reporte de historial del chofer generado correctamente.',
             'data' => [
                 'driver' => [
-                    'id' => $driver->id,
+                    'id'        => $driver->id,
                     'full_name' => $driver->full_name,
-                    'email' => $driver->email,
-                    'phone' => $driver->phone,
+                    'email'     => $driver->email,
+                    'phone'     => $driver->phone,
                 ],
                 'filters' => [
                     'start_date' => $start->toDateTimeString(),
-                    'end_date' => $end->toDateTimeString(),
+                    'end_date'   => $end->toDateTimeString(),
                 ],
                 'vehicle_requests' => $requestsHistory,
-                'trips' => $tripsHistory,
+                'trips'            => $tripsHistory,
             ],
         ], 200);
     }

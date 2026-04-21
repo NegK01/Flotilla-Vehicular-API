@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTripRequest;
 use App\Http\Requests\UpdateTripRequest;
-use Illuminate\Http\Request;
 use App\Models\Trip;
+use App\Models\VehicleRequest;
+use Illuminate\Http\Request;
 
 class TripController extends Controller
 {
@@ -14,7 +15,6 @@ class TripController extends Controller
      */
     public function index(Request $request)
     {
-        //
         $request->validate([
             'trashed' => ['nullable', 'in:only,with'],
         ]);
@@ -40,12 +40,26 @@ class TripController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Para crear el viaje, la solicitud asociada debe estar en estado aprobado
+     * Fix: driver_id y vehicle_id se derivan de la solicitud, no del payload
      */
     public function store(StoreTripRequest $request)
     {
-        //
-        $trip = Trip::create($request->validated());
+        $validated = $request->validated();
+
+        $vehicleRequest = VehicleRequest::find($validated['vehicle_request_id']);
+
+        if ($vehicleRequest->status !== VehicleRequest::STATUS_APPROVED) {
+            return response()->json([
+                'message' => 'Solo se puede registrar viajes con solicitudes aprobadas.',
+            ], 422);
+        }
+
+        // Driver y vehicle se toman de la solicitud aprobada — no del payload
+        $validated['driver_id']  = $vehicleRequest->driver_id;
+        $validated['vehicle_id'] = $vehicleRequest->vehicle_id;
+
+        $trip = Trip::create($validated);
 
         return response()->json([
             'message' => 'Viaje creado correctamente.',
@@ -58,7 +72,6 @@ class TripController extends Controller
      */
     public function show(Trip $trip)
     {
-        //
         $trip->load([
             'driver:id,full_name',
             'vehicle:id,plate,brand,model,year,vehicle_type',
@@ -72,12 +85,28 @@ class TripController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Al actualizar el vehicle_request_id volveremos a derivar los campos
+     * Fix: driver_id y vehicle_id se derivan de la solicitud, no del payload
      */
     public function update(UpdateTripRequest $request, Trip $trip)
     {
-        //
-        $trip->update($request->validated());
+        $validated = $request->validated();
+
+        // Si se cambia la vehicle_request_id, re-derivar driver_id y vehicle_id
+        if (isset($validated['vehicle_request_id'])) {
+            $vehicleRequest = VehicleRequest::find($validated['vehicle_request_id']);
+
+            if ($vehicleRequest->status !== VehicleRequest::STATUS_APPROVED) {
+                return response()->json([
+                    'message' => 'Solo se puede asociar solicitudes aprobadas al viaje.',
+                ], 422);
+            }
+
+            $validated['driver_id']  = $vehicleRequest->driver_id;
+            $validated['vehicle_id'] = $vehicleRequest->vehicle_id;
+        }
+
+        $trip->update($validated);
 
         return response()->json([
             'message' => 'Viaje actualizado correctamente.',
@@ -86,22 +115,19 @@ class TripController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (borrado lógico).
      */
     public function destroy(Trip $trip)
     {
-        //
         $trip->delete();
 
         return response()->json([
             'message' => 'Viaje desactivado correctamente.',
-            'data' => $trip->fresh(),
         ], 200);
     }
 
     public function restore(Trip $trip)
     {
-        //
         if (!$trip->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar el viaje.',

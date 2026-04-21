@@ -84,7 +84,6 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario desactivado correctamente.',
-            'data' => $user->fresh()->load('role:id,name'),
         ], 200);
     }
 
