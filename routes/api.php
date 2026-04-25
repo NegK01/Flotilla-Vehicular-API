@@ -28,7 +28,8 @@ Route::apiResource('roles', RoleController::class)
         ], 404);
     });
 
-
+Route::get('users/inactive', [UserController::class, 'inactive'])
+    ->middleware(['auth:sanctum', 'can:viewAny,App\Models\User']);
 Route::apiResource('users', UserController::class)
     ->middleware('auth:sanctum')
     ->middlewareFor('index', 'can:viewAny,App\Models\User')

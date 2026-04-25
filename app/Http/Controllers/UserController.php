@@ -84,7 +84,6 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Usuario desactivado correctamente.',
-            'data' => $user->fresh()->load('role:id,name'),
         ], 200);
     }
 
@@ -102,6 +101,15 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Usuario reactivado correctamente.',
             'data' => $user->fresh()->load('role:id,name'),
+        ], 200);
+    }
+    public function inactive()
+    {
+        $user = User::onlyTrashed()->latest()->paginate(10);
+
+        return response()->json([
+            'message' => 'Listado de usuarios inactivos',
+            'data' => $user,
         ], 200);
     }
 }
