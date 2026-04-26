@@ -2,50 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RejectVehicleRequestRequest;
-use App\Http\Requests\DirectAssignmentRequest;
-use App\Http\Requests\StoreVehicleRequestRequest;
-use App\Http\Requests\UpdateVehicleRequestRequest;
+use App\Http\Requests\VehicleRequest\IndexRequest;
+use App\Http\Requests\VehicleRequest\StoreRequest;
+use App\Http\Requests\VehicleRequest\UpdateRequest;
+use App\Http\Requests\VehicleRequest\RejectRequest;
+use App\Http\Requests\VehicleRequest\CancelRequest;
+use App\Http\Requests\VehicleRequest\DirectAssignmentRequest;
 use App\Models\VehicleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class VehicleRequestController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        $request->validate([
-            'request_type' => [
-                'nullable',
-                'string',
-                'in:' . implode(',', [
-                    VehicleRequest::TYPE_DRIVER_REQUEST,
-                    VehicleRequest::TYPE_DIRECT_ASSIGNMENT,
-                ]),
-            ],
-            'status' => [
-                'nullable',
-                'string',
-                'in:' . implode(',', [
-                    VehicleRequest::STATUS_PENDING,
-                    VehicleRequest::STATUS_APPROVED,
-                    VehicleRequest::STATUS_REJECTED,
-                    VehicleRequest::STATUS_CANCELLED,
-                ]),
-            ],
-            'trashed' => ['nullable', 'in:only,with'],
-        ]);
-
         $user = $request->user();
 
         $query = VehicleRequest::with([
             'driver:id,full_name',
-            'vehicle:id,plate,brand,model,year,vehicle_type',
+            'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
         ])
             ->latest()
+            ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
+            ->when($request->start_date && $request->end_date, fn($q) => $q->where(function($subQ) use ($request) {
+                $start = Carbon::parse($request->start_date)->startOfDay();
+                $end   = Carbon::parse($request->end_date)->endOfDay();
+                
+                // Busca cualquier solicitud cuyo periodo de uso se solape con el rango de fechas consultado
+                $subQ->where('start_at', '<=', $end)
+                     ->where('end_at', '>=', $start);
+            }))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
             ->when($request->trashed === 'with', fn($q) => $q->withTrashed())
             ->when($request->request_type,       fn($q) => $q->where('request_type', $request->request_type))
@@ -64,15 +54,12 @@ class VehicleRequestController extends Controller
      * Store a newly created resource in storage.
      * Fix IDOR: para choferes, driver_id se fuerza desde la sesión.
      */
-    public function store(StoreVehicleRequestRequest $request)
+    public function store(StoreRequest $request)
     {
         $validated = $request->validated();
 
-        // El driver_id siempre será el id del chofer logueado 
-        if ($request->user()->role_id === 3) {
-            $validated['driver_id'] = $request->user()->id;
-        }
-
+        // El driver_id siempre será el id del chofer logueado (garantizado por la Policy)
+        $validated['driver_id'] = $request->user()->id;
         $validated['status']       = VehicleRequest::STATUS_PENDING;
         $validated['request_type'] = VehicleRequest::TYPE_DRIVER_REQUEST;
 
@@ -91,7 +78,7 @@ class VehicleRequestController extends Controller
     {
         $vehicleRequest->load([
             'driver:id,full_name',
-            'vehicle:id,plate,brand,model,year,vehicle_type',
+            'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
         ]);
 
         return response()->json([
@@ -103,8 +90,9 @@ class VehicleRequestController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateVehicleRequestRequest $request, VehicleRequest $vehicleRequest)
+    public function update(UpdateRequest $request, VehicleRequest $vehicleRequest)
     {
+        // Si llega aquí, es porque la validación (incluyendo la disponibilidad) PASÓ.
         $vehicleRequest->update($request->validated());
 
         return response()->json([
@@ -155,7 +143,7 @@ class VehicleRequestController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'No se pudo aprobar la solicitud.',
+                'message' => 'Solo se puede aprobar solicitudes en estado pendiente.',
                 'error'   => $e->getMessage(),
             ], 422);
         }
@@ -164,7 +152,7 @@ class VehicleRequestController extends Controller
             'message' => 'Solicitud aprobada correctamente.',
             'data'    => $vehicleRequest->fresh()->load([
                 'driver:id,full_name',
-                'vehicle:id,plate,brand,model,year,vehicle_type',
+                'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
             ]),
         ], 200);
     }
@@ -173,14 +161,8 @@ class VehicleRequestController extends Controller
      * Rechaza una solicitud pendiente
      * PATCH /vehicleRequests/{vehicleRequest}/reject
      */
-    public function reject(RejectVehicleRequestRequest $request, VehicleRequest $vehicleRequest)
+    public function reject(RejectRequest $request, VehicleRequest $vehicleRequest)
     {
-        if ($vehicleRequest->status !== VehicleRequest::STATUS_PENDING) {
-            return response()->json([
-                'message' => 'Solo se pueden rechazar solicitudes en estado pendiente.',
-            ], 422);
-        }
-
         $validated = $request->validated();
 
         $vehicleRequest->update([
@@ -194,7 +176,7 @@ class VehicleRequestController extends Controller
             'message' => 'Solicitud rechazada correctamente.',
             'data'    => $vehicleRequest->fresh()->load([
                 'driver:id,full_name',
-                'vehicle:id,plate,brand,model,year,vehicle_type',
+                'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
             ]),
         ], 200);
     }
@@ -204,31 +186,8 @@ class VehicleRequestController extends Controller
      * El trigger 2 libera el vehículo automáticamente si no hay otras cosas vigentes
      * PATCH /vehicleRequests/{vehicleRequest}/cancel
      */
-    public function cancel(Request $request, VehicleRequest $vehicleRequest)
+    public function cancel(CancelRequest $request, VehicleRequest $vehicleRequest)
     {
-        // Solo el chofer puede cancelar solicitudes
-        if ($request->user()->role_id !== 3) {
-            return response()->json([
-                'message' => 'Solo el chofer puede cancelar solicitudes.',
-            ], 403);
-        }
-
-        // Solo puede cancelar sus propias solicitudes
-        if ($vehicleRequest->driver_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'No autorizado para cancelar esta solicitud.',
-            ], 403);
-        }
-
-        if (!in_array($vehicleRequest->status, [
-            VehicleRequest::STATUS_PENDING,
-            VehicleRequest::STATUS_APPROVED,
-        ], true)) {
-            return response()->json([
-                'message' => 'Solo se pueden cancelar solicitudes en estado pendiente o aprobado.',
-            ], 422);
-        }
-
         // El trigger 2 (fn_release_vehicle_on_cancellation) maneja la liberación del vehículo
         $vehicleRequest->update([
             'status' => VehicleRequest::STATUS_CANCELLED,
@@ -238,7 +197,7 @@ class VehicleRequestController extends Controller
             'message' => 'Solicitud cancelada correctamente.',
             'data'    => $vehicleRequest->fresh()->load([
                 'driver:id,full_name',
-                'vehicle:id,plate,brand,model,year,vehicle_type',
+                'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
             ]),
         ], 200);
     }
@@ -279,7 +238,7 @@ class VehicleRequestController extends Controller
             'message' => 'Asignación directa realizada correctamente.',
             'data'    => $vehicleRequest?->load([
                 'driver:id,full_name',
-                'vehicle:id,plate,brand,model,year,vehicle_type',
+                'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
             ]),
         ], 201);
     }

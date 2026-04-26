@@ -14,7 +14,7 @@ class VehiclePolicy
     public function viewAny(User $user): Response
     {
         // operacion ternaria condición ? valor_si_true : valor_si_false
-        return in_array((int) $user->role_id, [1, 2, 3], true)
+        return in_array($user->role_id, [1, 2, 3], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para ver informacion sobre vehiculos.');
     }
@@ -24,7 +24,7 @@ class VehiclePolicy
      */
     public function view(User $user, Vehicle $model): Response
     {
-        return in_array((int) $user->role_id, [1, 2, 3], true)
+        return in_array($user->role_id, [1, 2, 3], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para ver informacion sobre vehiculos.');
     }
@@ -34,7 +34,7 @@ class VehiclePolicy
      */
     public function create(User $user): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para crear un vehiculo.');
     }
@@ -44,7 +44,7 @@ class VehiclePolicy
      */
     public function update(User $user, Vehicle $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para actualizar un vehiculo.');
     }
@@ -54,7 +54,7 @@ class VehiclePolicy
      */
     public function delete(User $user, Vehicle $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para desactivar un vehiculo.');
     }
@@ -64,7 +64,7 @@ class VehiclePolicy
      */
     public function restore(User $user, Vehicle $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para reactivar un vehiculo.');
     }
@@ -74,7 +74,7 @@ class VehiclePolicy
      */
     public function forceDelete(User $user, Vehicle $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para eliminar un vehiculo.');
     }

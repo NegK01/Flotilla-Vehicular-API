@@ -13,9 +13,9 @@ class UserPolicy
     public function viewAny(User $user): Response
     {
         // operacion ternaria condición ? valor_si_true : valor_si_false
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
-            : Response::deny('El usuario no esta autorizado para ver informacion sobre usuarios.');
+            : Response::deny('El usuario no esta autorizado para ver información de usuarios.');
     }
 
     /**
@@ -25,7 +25,7 @@ class UserPolicy
     {
         return $user->id === $model->id || $user->role_id === 1
             ? Response::allow()
-            : Response::deny('El usuario no esta autorizado para ver informacion sobre usuarios.');
+            : Response::deny('El usuario no esta autorizado para ver información de otro usuario.');
     }
 
     /**
@@ -33,7 +33,7 @@ class UserPolicy
      */
     public function create(User $user): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para crear un usuario.');
     }
@@ -43,7 +43,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para actualizar un usuario.');
     }
@@ -53,7 +53,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para desactivar un usuario.');
     }
@@ -63,14 +63,14 @@ class UserPolicy
      */
     public function restore(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para reactivar un usuario.');
     }
 
     public function viewDriverHistory(User $user, User $driver): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para ver el reporte de historial del chofer.');
     }
@@ -80,7 +80,7 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): Response
     {
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para eliminar un usuario.');
     }

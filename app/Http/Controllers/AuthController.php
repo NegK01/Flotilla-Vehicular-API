@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterDriverRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\User\RegisterDriverRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,13 +14,13 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $credentials = $request->validated();
+        $validated = $request->validated();
 
         $user = User::withTrashed()
-            ->where('email', $credentials['email'])
+            ->where('email', $validated['email'])
             ->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'message' => 'Credenciales inválidas.'
             ], 401);
@@ -43,10 +43,10 @@ class AuthController extends Controller
 
     public function registerDriver(RegisterDriverRequest $request)
     {
-        $data = $request->validated();
-        $data['role_id'] = self::DRIVER_ROLE_ID;
+        $validated = $request->validated();
+        $validated['role_id'] = self::DRIVER_ROLE_ID;
 
-        $user = User::create($data);
+        $user = User::create($validated);
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente.',

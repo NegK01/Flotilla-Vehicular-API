@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\TravelRoute;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RejectVehicleRequestRequest extends FormRequest
+class IndexRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,7 +14,7 @@ class RejectVehicleRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'observation' => 'nullable|string|max:500',
+            'trashed' => ['nullable', 'in:only,with'],
         ];
     }
 }

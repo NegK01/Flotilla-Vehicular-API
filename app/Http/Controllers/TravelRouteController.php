@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreTravelRouteRequest;
-use App\Http\Requests\UpdateTravelRouteRequest;
+use App\Http\Requests\TravelRoute\IndexRequest;
+use App\Http\Requests\TravelRoute\StoreRequest;
+use App\Http\Requests\TravelRoute\UpdateRequest;
 use Illuminate\Http\Request;
 use App\Models\TravelRoute;
 
@@ -12,12 +13,9 @@ class TravelRouteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        //
-        $request->validate([
-            'trashed' => ['nullable', 'in:only,with'],
-        ]);
+        $validated = $request->validated();
 
         $query = TravelRoute::latest()
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
@@ -34,9 +32,8 @@ class TravelRouteController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTravelRouteRequest $request)
+    public function store(StoreRequest $request)
     {
-        //
         $travelRoute = TravelRoute::create($request->validated());
 
         return response()->json([
@@ -50,7 +47,6 @@ class TravelRouteController extends Controller
      */
     public function show(TravelRoute $travelRoute)
     {
-        //
         return response()->json([
             'message' => 'Ruta seleccionada:',
             'data' => $travelRoute,
@@ -60,9 +56,8 @@ class TravelRouteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTravelRouteRequest $request, TravelRoute $travelRoute)
+    public function update(UpdateRequest $request, TravelRoute $travelRoute)
     {
-        //
         $travelRoute->update($request->validated());
 
         return response()->json([
@@ -76,7 +71,6 @@ class TravelRouteController extends Controller
      */
     public function destroy(TravelRoute $travelRoute)
     {
-        //
         $travelRoute->delete();
 
         return response()->json([
@@ -86,7 +80,6 @@ class TravelRouteController extends Controller
 
     public function restore(TravelRoute $travelRoute)
     {
-        //
         if (!$travelRoute->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar la ruta.',

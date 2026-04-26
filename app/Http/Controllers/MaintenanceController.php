@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreMaintenanceRequest;
-use App\Http\Requests\UpdateMaintenanceRequest;
+use App\Http\Requests\Maintenance\IndexRequest;
+use App\Http\Requests\Maintenance\StoreRequest;
+use App\Http\Requests\Maintenance\UpdateRequest;
 use Illuminate\Http\Request;
 use App\Models\Maintenance;
 
@@ -12,33 +13,15 @@ class MaintenanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        //
-        $request->validate([
-            'type' => [
-                'nullable',
-                'string',
-                'in:' . implode(',', [
-                    Maintenance::TYPE_PREVENTIVE,
-                    Maintenance::TYPE_CORRECTIVE,
-                ]),
-            ],
-            'status' => [
-                'nullable',
-                'string',
-                'in:' . implode(',', [
-                    Maintenance::STATUS_OPEN,
-                    Maintenance::STATUS_CLOSED,
-                ]),
-            ],
-            'trashed' => ['nullable', 'in:only,with'],
-        ]);
+        $validated = $request->validated();
 
         $query = Maintenance::with([
-            'vehicle:id,plate,brand,model,year,vehicle_type',
+            'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
         ])
             ->latest()
+            ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
             ->when($request->type,   fn($q) => $q->where('type',   $request->type))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
@@ -55,9 +38,8 @@ class MaintenanceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreMaintenanceRequest $request)
+    public function store(StoreRequest $request)
     {
-        //
         $maintenance = Maintenance::create($request->validated());
 
         return response()->json([
@@ -71,19 +53,17 @@ class MaintenanceController extends Controller
      */
     public function show(Maintenance $maintenance)
     {
-        //
         return response()->json([
             'message' => 'Mantenimiento seleccionado:',
-            'data' => $maintenance->load('vehicle:id,plate,brand,model,year'),
+            'data' => $maintenance->load('vehicle:id,plate,brand,model,year,image_path'),
         ], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateMaintenanceRequest $request, Maintenance $maintenance)
+    public function update(UpdateRequest $request, Maintenance $maintenance)
     {
-        //
         $maintenance->update($request->validated());
 
         return response()->json([
@@ -97,7 +77,6 @@ class MaintenanceController extends Controller
      */
     public function destroy(Maintenance $maintenance)
     {
-        //
         $maintenance->delete();
 
         return response()->json([
@@ -105,20 +84,19 @@ class MaintenanceController extends Controller
         ], 200);
     }
 
-    public function restore(Maintenance $mantenance)
+    public function restore(Maintenance $maintenance)
     {
-        //
-        if (!$mantenance->trashed()) {
+        if (!$maintenance->trashed()) {
             return response()->json([
                 'message' => 'No se pudo reactivar el mantenimiento.',
             ], 404);
         }
 
-        $mantenance->restore();
+        $maintenance->restore();
 
         return response()->json([
             'message' => 'Mantenimiento reactivado correctamente.',
-            'data' => $mantenance->fresh(),
+            'data' => $maintenance->fresh(),
         ], 200);
     }
 }

@@ -2,34 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreTripRequest;
-use App\Http\Requests\UpdateTripRequest;
+use App\Http\Requests\Trip\IndexRequest;
+use App\Http\Requests\Trip\StoreRequest;
+use App\Http\Requests\Trip\UpdateRequest;
 use App\Models\Trip;
 use App\Models\VehicleRequest;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class TripController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        $request->validate([
-            'trashed' => ['nullable', 'in:only,with'],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
 
         $query = Trip::with([
             'driver:id,full_name',
-            'vehicle:id,plate,brand,model,year,vehicle_type',
+            'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
             'travelRoute:id,name,start_point,end_point',
         ])
             ->latest()
+            ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
+            ->when($request->start_date && $request->end_date, fn($q) => $q->whereBetween('departure_at', [
+                Carbon::parse($request->start_date)->startOfDay(),
+                Carbon::parse($request->end_date)->endOfDay()
+            ]))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
             ->when($request->trashed === 'with', fn($q) => $q->withTrashed())
-            ->when((int) $user->role_id === 3,   fn($q) => $q->where('driver_id', $user->id));
+            ->when($user->role_id === 3,   fn($q) => $q->where('driver_id', $user->id));
 
         $trips = $query->paginate(10);
 
@@ -41,23 +46,17 @@ class TripController extends Controller
 
     /**
      * Para crear el viaje, la solicitud asociada debe estar en estado aprobado
-     * Fix: driver_id y vehicle_id se derivan de la solicitud, no del payload
      */
-    public function store(StoreTripRequest $request)
+    public function store(StoreRequest $request)
     {
         $validated = $request->validated();
 
-        $vehicleRequest = VehicleRequest::find($validated['vehicle_request_id']);
+        $vehicleRequest = VehicleRequest::with('vehicle')->find($validated['vehicle_request_id']);
 
-        if ($vehicleRequest->status !== VehicleRequest::STATUS_APPROVED) {
-            return response()->json([
-                'message' => 'Solo se puede registrar viajes con solicitudes aprobadas.',
-            ], 422);
-        }
-
-        // Driver y vehicle se toman de la solicitud aprobada — no del payload
-        $validated['driver_id']  = $vehicleRequest->driver_id;
-        $validated['vehicle_id'] = $vehicleRequest->vehicle_id;
+        // Driver, vehicle y kilometraje de salida se derivan de la solicitud — no del payload
+        $validated['driver_id']         = $vehicleRequest->driver_id;
+        $validated['vehicle_id']        = $vehicleRequest->vehicle_id;
+        $validated['departure_mileage'] = $vehicleRequest->vehicle->current_mileage;
 
         $trip = Trip::create($validated);
 
@@ -74,7 +73,7 @@ class TripController extends Controller
     {
         $trip->load([
             'driver:id,full_name',
-            'vehicle:id,plate,brand,model,year,vehicle_type',
+            'vehicle:id,plate,brand,model,year,vehicle_type,image_path',
             'travelRoute:id,name,start_point,end_point',
         ]);
 
@@ -85,32 +84,17 @@ class TripController extends Controller
     }
 
     /**
-     * Al actualizar el vehicle_request_id volveremos a derivar los campos
-     * Fix: driver_id y vehicle_id se derivan de la solicitud, no del payload
+     * Permite correcciones operativas y el cierre formal del viaje (return_at + return_mileage).
+     * vehicle_request_id es inmutable - driver_id y vehicle_id no se re-derivan, en caso de ocuparlo,
+     * se debe de eliminar el viaje y crear uno nuevo
      */
-    public function update(UpdateTripRequest $request, Trip $trip)
+    public function update(UpdateRequest $request, Trip $trip)
     {
-        $validated = $request->validated();
-
-        // Si se cambia la vehicle_request_id, re-derivar driver_id y vehicle_id
-        if (isset($validated['vehicle_request_id'])) {
-            $vehicleRequest = VehicleRequest::find($validated['vehicle_request_id']);
-
-            if ($vehicleRequest->status !== VehicleRequest::STATUS_APPROVED) {
-                return response()->json([
-                    'message' => 'Solo se puede asociar solicitudes aprobadas al viaje.',
-                ], 422);
-            }
-
-            $validated['driver_id']  = $vehicleRequest->driver_id;
-            $validated['vehicle_id'] = $vehicleRequest->vehicle_id;
-        }
-
-        $trip->update($validated);
+        $trip->update($request->validated());
 
         return response()->json([
             'message' => 'Viaje actualizado correctamente.',
-            'data' => $trip->fresh(),
+            'data'    => $trip->fresh(),
         ], 200);
     }
 

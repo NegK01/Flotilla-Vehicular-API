@@ -14,7 +14,7 @@ class RolePolicy
     public function viewAny(User $user): Response
     {
         // operacion ternaria condición ? valor_si_true : valor_si_false
-        return (int) $user->role_id === 1
+        return $user->role_id === 1
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para ver informacion sobre roles.');
     }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\DriverHistoryReportRequest;
+use App\Http\Requests\Report\DriverHistoryRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
@@ -12,14 +12,8 @@ class ReportController extends Controller
 {
     // Reporte 3 
     // Muestra solicitudes y viajes del chofer para consulta administrativa
-    public function driverHistory(DriverHistoryReportRequest $request, User $driver)
+    public function driverHistory(DriverHistoryRequest $request, User $driver)
     {
-        if ((int) $driver->role_id !== 3) {
-            return response()->json([
-                'message' => 'Chofer no encontrado.',
-            ], 404);
-        }
-
         $validated = $request->validated();
         $start = Carbon::parse($validated['start_date'])->startOfDay();
         $end   = Carbon::parse($validated['end_date'])->endOfDay();

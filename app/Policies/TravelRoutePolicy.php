@@ -14,7 +14,7 @@ class TravelRoutePolicy
     public function viewAny(User $user): Response
     {
         // operacion ternaria condición ? valor_si_true : valor_si_false
-        return in_array((int) $user->role_id, [1, 2, 3], true)
+        return in_array($user->role_id, [1, 2, 3], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para ver informacion sobre rutas.');
     }
@@ -24,7 +24,7 @@ class TravelRoutePolicy
      */
     public function view(User $user, TravelRoute $model): Response
     {
-        return in_array((int) $user->role_id, [1, 2, 3], true)
+        return in_array($user->role_id, [1, 2, 3], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para ver informacion sobre rutas.');
     }
@@ -34,7 +34,7 @@ class TravelRoutePolicy
      */
     public function create(User $user): Response
     {
-        return in_array((int) $user->role_id, [1, 2], true)
+        return in_array($user->role_id, [1, 2], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para crear una ruta.');
     }
@@ -44,7 +44,7 @@ class TravelRoutePolicy
      */
     public function update(User $user, TravelRoute $model): Response
     {
-        return in_array((int) $user->role_id, [1, 2], true)
+        return in_array($user->role_id, [1, 2], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para actualizar una ruta.');
     }
@@ -54,7 +54,7 @@ class TravelRoutePolicy
      */
     public function delete(User $user, TravelRoute $model): Response
     {
-        return in_array((int) $user->role_id, [1, 2], true)
+        return in_array($user->role_id, [1, 2], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para desactivar una ruta.');
     }
@@ -64,7 +64,7 @@ class TravelRoutePolicy
      */
     public function restore(User $user, TravelRoute $model): Response
     {
-        return in_array((int) $user->role_id, [1, 2], true)
+        return in_array($user->role_id, [1, 2], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para reactivar una ruta.');
     }
@@ -74,7 +74,7 @@ class TravelRoutePolicy
      */
     public function forceDelete(User $user, TravelRoute $model): Response
     {
-        return in_array((int) $user->role_id, [1, 2], true)
+        return in_array($user->role_id, [1, 2], true)
             ? Response::allow()
             : Response::deny('El usuario no esta autorizado para eliminar una ruta.');
     }

@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Maintenance;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\Vehicle;
 
-class StoreTravelRouteRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +24,14 @@ class StoreTravelRouteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:150',
-            'start_point' => 'required|string|max:150',
-            'end_point' => 'required|string|max:150',
-            'estimated_distance' => 'nullable|numeric|min:0|max:999999.99',
-            'description' => 'nullable|string',
+            'vehicle_id'  => [
+                'required',
+                Rule::exists('vehicles', 'id')
+                    ->whereNull('deleted_at')
+            ],
+            'type' => 'required|in:preventive,corrective',
+            'start_at' => 'required|date',
+            'description' => 'required|string',
         ];
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreVehicleRequest;
-use App\Http\Requests\UpdateVehicleRequest;
+use App\Http\Requests\Vehicle\IndexRequest;
+use App\Http\Requests\Vehicle\StoreRequest;
+use App\Http\Requests\Vehicle\UpdateRequest;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,32 +17,15 @@ class VehicleController extends Controller
      * Soporta filtro por status y por disponibilidad en rango de fecha/hora (RF-05.2).
      * El filtro de rango usa fn_is_vehicle_available() a nivel de consulta.
      */
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        $request->validate([
-            'status' => [
-                'nullable',
-                'string',
-                'in:' . implode(',', [
-                    Vehicle::STATUS_AVAILABLE,
-                    Vehicle::STATUS_RESERVED,
-                    Vehicle::STATUS_MAINTENANCE,
-                    Vehicle::STATUS_OUT_OF_SERVICE,
-                ]),
-            ],
-            'trashed'  => ['nullable', 'in:only,with'],
-            // Filtro por disponibilidad real en rango (RF-05.2)
-            'start_at' => ['nullable', 'date', 'required_with:end_at'],
-            'end_at'   => ['nullable', 'date', 'after:start_at', 'required_with:start_at'],
-        ]);
-
         $query = Vehicle::latest()
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
             ->when($request->trashed === 'with', fn($q) => $q->withTrashed());
 
         // Si se pasa rango, filtrar por disponibilidad real usando fn_is_vehicle_available
-        if ($request->filled('start_at') && $request->filled('end_at')) {
+        if ($request->start_at && $request->end_at) {
             $startAt = $request->input('start_at');
             $endAt   = $request->input('end_at');
 
@@ -54,7 +38,7 @@ class VehicleController extends Controller
         $vehicles = $query->paginate(10);
 
         return response()->json([
-            'message' => 'Lista de vehiculos seleccionados:',
+            'message' => 'Lista de vehículos seleccionados:',
             'data' => $vehicles,
         ], 200);
     }
@@ -62,18 +46,18 @@ class VehicleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreVehicleRequest $request)
+    public function store(StoreRequest $request)
     {
-        $data = $request->validated();
+        $validated = $request->validated();
 
         if ($request->hasFile('image_path')) {
-            $data['image_path'] = $request->file('image_path')->store('images/vehicles', 'public');
+            $validated['image_path'] = $request->file('image_path')->store('images/vehicles', 'public');
         }
 
-        $vehicle = Vehicle::create($data);
+        $vehicle = Vehicle::create($validated);
 
         return response()->json([
-            'message' => 'Vehiculo creado correctamente.',
+            'message' => 'Vehículo creado correctamente.',
             'data' => $vehicle,
         ], 201);
     }
@@ -84,7 +68,7 @@ class VehicleController extends Controller
     public function show(Vehicle $vehicle)
     {
         return response()->json([
-            'message' => 'Vehiculo seleccionado:',
+            'message' => 'Vehículo seleccionado:',
             'data' => $vehicle,
         ], 200);
     }
@@ -92,22 +76,22 @@ class VehicleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateVehicleRequest $request, Vehicle $vehicle)
+    public function update(UpdateRequest $request, Vehicle $vehicle)
     {
-        $data = $request->validated();
+        $validated = $request->validated();
 
         if ($request->hasFile('image_path')) {
             // Eliminar imagen anterior si existe
             if ($vehicle->image_path) {
                 Storage::disk('public')->delete($vehicle->image_path);
             }
-            $data['image_path'] = $request->file('image_path')->store('images/vehicles', 'public');
+            $validated['image_path'] = $request->file('image_path')->store('images/vehicles', 'public');
         }
 
-        $vehicle->update($data);
+        $vehicle->update($validated);
 
         return response()->json([
-            'message' => 'Vehiculo actualizado correctamente.',
+            'message' => 'Vehículo actualizado correctamente.',
             'data' => $vehicle->fresh(),
         ], 200);
     }
@@ -120,7 +104,7 @@ class VehicleController extends Controller
         $vehicle->delete();
 
         return response()->json([
-            'message' => 'Vehiculo desactivado correctamente.',
+            'message' => 'Vehículo desactivado correctamente.',
         ], 200);
     }
 
@@ -128,14 +112,21 @@ class VehicleController extends Controller
     {
         if (!$vehicle->trashed()) {
             return response()->json([
-                'message' => 'No se pudo reactivar el vehiculo.',
+                'message' => 'No se pudo reactivar el vehículo.',
             ], 404);
+        }
+
+        // Prevenir duplicidad de placa si ya existe un vehículo activo con la misma
+        if (Vehicle::where('plate', $vehicle->plate)->exists()) {
+            return response()->json([
+                'message' => 'No se puede reactivar el vehículo porque la placa ya está registrada en otro vehículo activo.',
+            ], 409);
         }
 
         $vehicle->restore();
 
         return response()->json([
-            'message' => 'Vehiculo reactivado correctamente.',
+            'message' => 'Vehículo reactivado correctamente.',
             'data' => $vehicle->fresh(),
         ], 200);
     }

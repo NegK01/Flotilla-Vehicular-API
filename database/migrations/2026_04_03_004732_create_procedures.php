@@ -101,22 +101,24 @@ return new class extends Migration
                     RAISE EXCEPTION 'La fecha de inicio debe ser menor a la fecha de fin';
                 END IF;
 
-                -- Paso 2: verificar que el chofer existe
+                -- Paso 2: verificar que el chofer existe y es Rol 3
                 IF NOT EXISTS (
                     SELECT 1 FROM users
                     WHERE id = p_driver_id
+                        AND role_id = 3
                         AND deleted_at IS NULL
                 ) THEN
-                    RAISE EXCEPTION 'El chofer % no existe o fue eliminado', p_driver_id;
+                    RAISE EXCEPTION 'El usuario % no existe, fue eliminado o no tiene rol de Chofer', p_driver_id;
                 END IF;
 
-                -- Paso 3: verificar que el operador existe
+                -- Paso 3: verificar que el operador o admin existe y es Rol 1 o 2
                 IF NOT EXISTS (
                     SELECT 1 FROM users
                     WHERE id = p_reviewed_by
+                        AND role_id IN (1, 2)
                         AND deleted_at IS NULL
                 ) THEN
-                    RAISE EXCEPTION 'El operador % no existe o fue eliminado', p_reviewed_by;
+                    RAISE EXCEPTION 'El usuario % no existe, fue eliminado o no tiene permisos para aprobar', p_reviewed_by;
                 END IF;
 
                 -- Paso 4: verificar disponibilidad usando la función

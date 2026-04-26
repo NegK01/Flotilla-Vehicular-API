@@ -82,7 +82,7 @@ return new class extends Migration
                     SELECT COUNT(*) INTO active_trips
                     FROM trips
                     WHERE vehicle_id = NEW.vehicle_id
-                        AND return_at IS NULL
+                        AND return_mileage IS NULL
                         AND deleted_at IS NULL;
 
                     -- Prioridad 2: mantenimiento abierto
@@ -187,7 +187,7 @@ return new class extends Migration
                     SELECT COUNT(*) INTO active_trips
                     FROM trips
                     WHERE vehicle_id = NEW.vehicle_id
-                        AND return_at IS NULL
+                        AND return_mileage IS NULL
                         AND deleted_at IS NULL;
 
                     -- Prioridad 2: siguen habiendo mantenimientos abiertos
@@ -264,7 +264,7 @@ return new class extends Migration
                         SELECT COUNT(*) INTO active_other_trips
                         FROM trips
                         WHERE vehicle_id = NEW.vehicle_id
-                            AND return_at IS NULL
+                            AND return_mileage IS NULL
                             AND id <> NEW.id
                             AND deleted_at IS NULL;
 

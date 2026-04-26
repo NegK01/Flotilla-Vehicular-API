@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Vehicle;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Vehicle;
 
-class StoreVehicleRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -37,10 +38,10 @@ class StoreVehicleRequest extends FormRequest
             'fuel_type' => 'required|string|max:50',
             'image_path' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
             'status' => [
-                'nullable',
+                'sometimes',
                 Rule::in([Vehicle::STATUS_AVAILABLE, Vehicle::STATUS_OUT_OF_SERVICE]),
             ],
-            'current_mileage' => 'nullable|integer|min:0',
+            'current_mileage' => 'sometimes|integer|min:0',
         ];
     }
 }

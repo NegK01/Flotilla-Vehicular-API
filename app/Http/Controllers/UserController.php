@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\User\IndexRequest;
+use App\Http\Requests\User\StoreRequest;
+use App\Http\Requests\User\UpdateRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 
@@ -12,14 +13,8 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(IndexRequest $request)
     {
-        //
-        $request->validate([
-            'role' => ['nullable', 'integer', 'in:1,2,3'],
-            'trashed' => ['nullable', 'in:only,with'],
-        ]);
-
         $query = User::with('role:id,name')
             ->latest()
             ->when($request->role, fn($q) => $q->where('role_id', $request->role))
@@ -37,9 +32,8 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreRequest $request)
     {
-        //
         $user = User::create($request->validated());
 
         return response()->json([
@@ -53,7 +47,6 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
         return response()->json([
             'message' => 'Usuario seleccionado:',
             'data' => $user->load('role:id,name'),
@@ -63,9 +56,8 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateRequest $request, User $user)
     {
-        //
         $user->update($request->validated());
 
         return response()->json([
@@ -79,7 +71,6 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
         $user->delete();
 
         return response()->json([
@@ -89,11 +80,16 @@ class UserController extends Controller
 
     public function restore(User $user)
     {
-        //
         if (!$user->trashed()) {
             return response()->json([
-                'message' => 'No se pudo reactivar el ususario.',
+                'message' => 'No se pudo reactivar el usuario.',
             ], 404);
+        }
+
+        if (User::where('email', $user->email)->exists()) {
+            return response()->json([
+                'message' => 'No se puede reactivar el usuario porque el correo electrónico ya está en uso por otro usuario activo.',
+            ], 409);
         }
 
         $user->restore();
