@@ -26,14 +26,15 @@ class ReportController extends Controller
                 'vr.start_at',
                 'vr.end_at',
                 'vr.observation',
-                'v.id as vehicle_id',
-                'v.plate',
-                'v.brand',
-                'v.model',
-                'v.image_path',
+                'driver.full_name as driver_name',
+                'v.plate as vehicle_plate',
+                'v.brand as vehicle_brand',
+                'v.model as vehicle_model',
+                'v.image_path as vehicle_image',
                 'reviewer.full_name as reviewed_by_name',
                 'vr.reviewed_at'
             )
+            ->join('users as driver', 'vr.driver_id', '=', 'driver.id')
             ->join('vehicles as v', 'vr.vehicle_id', '=', 'v.id')
             ->leftJoin('users as reviewer', 'vr.reviewed_by', '=', 'reviewer.id')
             ->where('vr.driver_id', $driver->id)
@@ -54,23 +55,22 @@ class ReportController extends Controller
         $tripsHistory = DB::table('trips as t')
             ->select(
                 't.id as trip_id',
-                't.vehicle_request_id',
                 't.departure_at',
                 't.return_at',
                 't.departure_mileage',
                 't.return_mileage',
-                DB::raw('COALESCE(t.return_mileage - t.departure_mileage, 0) AS km_driven'),
+                DB::raw('fn_calculate_km_driven(t.departure_mileage, t.return_mileage) AS km_driven'),
                 't.observations',
-                'v.id as vehicle_id',
-                'v.plate',
-                'v.brand',
-                'v.model',
-                'v.image_path',
-                'tr.id as travel_route_id',
+                'driver.full_name as driver_name',
+                'v.plate as vehicle_plate',
+                'v.brand as vehicle_brand',
+                'v.model as vehicle_model',
+                'v.image_path as vehicle_image',
                 'tr.name as route_name',
                 'tr.start_point as route_start_point',
                 'tr.end_point as route_end_point'
             )
+            ->join('users as driver', 't.driver_id', '=', 'driver.id')
             ->join('vehicles as v', 't.vehicle_id', '=', 'v.id')
             ->leftJoin('travel_routes as tr', 't.travel_route_id', '=', 'tr.id')
             ->where('t.driver_id', $driver->id)

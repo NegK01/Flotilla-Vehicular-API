@@ -31,10 +31,7 @@ class VehicleRequestController extends Controller
             ->when($request->start_date && $request->end_date, fn($q) => $q->where(function($subQ) use ($request) {
                 $start = Carbon::parse($request->start_date)->startOfDay();
                 $end   = Carbon::parse($request->end_date)->endOfDay();
-                
-                // Busca cualquier solicitud cuyo periodo de uso se solape con el rango de fechas consultado
-                $subQ->where('start_at', '<=', $end)
-                     ->where('end_at', '>=', $start);
+                $subQ->whereBetween('start_at', [$start, $end]);
             }))
             ->when($request->trashed === 'only', fn($q) => $q->onlyTrashed())
             ->when($request->trashed === 'with', fn($q) => $q->withTrashed())

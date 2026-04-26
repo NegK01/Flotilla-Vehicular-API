@@ -84,6 +84,27 @@ return new class extends Migration
             END;
             $$ LANGUAGE plpgsql;
         ");
+
+        // HACK: Function 2
+        // - Calcula los kilómetros recorridos en un viaje
+        // - Retorna la diferencia entre el kilometraje de retorno y el de salida
+        // - Regla de negocio: kilometraje de retorno no puede ser menor al de salida
+        // - Retorna 0 si el viaje no ha retornado (NULL) o si los datos son inconsistentes
+        DB::statement("
+            CREATE OR REPLACE FUNCTION fn_calculate_km_driven(
+                p_departure_mileage INTEGER,
+                p_return_mileage    INTEGER
+            )
+            RETURNS INTEGER AS $$
+            BEGIN
+                IF p_return_mileage IS NULL OR p_return_mileage < p_departure_mileage THEN
+                    RETURN 0;
+                END IF;
+
+                RETURN p_return_mileage - p_departure_mileage;
+            END;
+            $$ LANGUAGE plpgsql;
+        ");
     }
 
     /**
@@ -91,6 +112,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement("DROP FUNCTION IF EXISTS fn_calculate_km_driven");
         DB::statement("DROP FUNCTION IF EXISTS fn_is_vehicle_available");
     }
 };
