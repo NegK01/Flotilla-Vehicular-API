@@ -48,7 +48,7 @@ class ReportController extends Controller
 
     // Reporte 2  
     // muestra por vehículo la cantidad de viajes y los kilómetros recorridos para consulta administrativa
-    public function vehicleHistory(VehicleHistoryRequest $request, Vehicle $vehicle) 
+    public function vehicleHistory(VehicleHistoryRequest $request, Vehicle $vehicle)
     {
         $validated = $request->validated();
         $start = Carbon::parse($validated['start_date'])->startOfDay();
@@ -129,6 +129,7 @@ class ReportController extends Controller
         $tripsHistory = DB::table('trips as t')
             ->select(
                 't.id as trip_id',
+                't.vehicle_request_id as request_id',
                 't.departure_at',
                 't.return_at',
                 't.departure_mileage',
