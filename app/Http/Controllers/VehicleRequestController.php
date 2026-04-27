@@ -140,7 +140,7 @@ class VehicleRequestController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Solo se puede aprobar solicitudes en estado pendiente.',
+                'message' => 'Solo se puede aprobar solicitudes en estado pendiente o disponibles para otras fechas.',
                 'error'   => $e->getMessage(),
             ], 422);
         }

@@ -176,7 +176,7 @@ return new class extends Migration
                 active_trips              INTEGER;
                 current_vehicle_status    VARCHAR;
             BEGIN
-                IF OLD.status = 'open' AND NEW.status = 'closed' THEN
+                IF OLD.status = 'open' AND NEW.status = 'closed' OR OLD.status = 'closed' AND NEW.status = 'open' THEN
 
                     SELECT status INTO current_vehicle_status
                     FROM vehicles
@@ -207,7 +207,7 @@ return new class extends Migration
                         AND deleted_at IS NULL;
 
                     -- Prioridad 2: siguen habiendo mantenimientos abiertos
-                    IF open_maintenances > 0 THEN
+                    IF open_maintenances > 0 OR OLD.status = 'closed' AND NEW.status = 'open' THEN
                         UPDATE vehicles SET status = 'maintenance'
                         WHERE id = NEW.vehicle_id;
 
@@ -221,7 +221,6 @@ return new class extends Migration
                         UPDATE vehicles SET status = 'available'
                         WHERE id = NEW.vehicle_id;
                     END IF;
-
                 END IF;
                 RETURN NEW;
             END;

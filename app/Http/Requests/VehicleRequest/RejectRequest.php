@@ -15,7 +15,7 @@ class RejectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'observation' => 'nullable|string|max:500',
+            'observation' => 'sometimes|nullable|string|max:500',
         ];
     }
 
