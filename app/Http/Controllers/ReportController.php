@@ -3,13 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Report\DriverHistoryRequest;
+use App\Http\Requests\Report\VehicleAvailabilityRequest;
+use App\Http\Requests\Report\VehicleHistoryRequest;
 use App\Models\User;
+use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    // Reporte 1  
+    // Muestra vehículos disponibles para consulta administrativa 
+    public function vehicleAvailability(VehicleAvailabilityRequest $request)
+    {
+        $validated = $request->validated();
+        $start = Carbon::parse($validated['start_date'])->startOfDay();
+        $end   = Carbon::parse($validated['end_date'])->endOfDay();
+
+        $availableVehicles = DB::table('vehicles as v')
+            ->select('v.id', 'v.plate', 'v.brand', 'v.model', 'v.year', 'v.vehicle_type', 'v.image_path', 'v.status')
+            ->whereNull('v.deleted_at')
+            ->whereRaw("fn_is_vehicle_available(v.id, ?::timestamp, ?::timestamp) = TRUE", [$start, $end])
+            ->get();
+
+        $availableVehicles->transform(function ($vehicle) {
+            $vehicle->image_url = $vehicle->image_path
+                ? asset('storage/' . $vehicle->image_path)
+                : asset('images/placeholder.png');
+            return $vehicle;
+        });
+
+        return response()->json([
+            'message' => 'Reporte de vehiculos disponibles hecho correctamente.',
+            'data' => [
+                'data' => $availableVehicles,
+                'filters' => [
+                    'start_date' => $start->toDateTimeString(),
+                    'end_date'   => $end->toDateTimeString(),
+                ],
+            ],
+        ], 200);
+    }
+
+    // Reporte 2  
+    // muestra por vehículo la cantidad de viajes y los kilómetros recorridos para consulta administrativa
+    public function VehicleHistory(VehicleHistoryRequest $request, Vehicle $vehicle) 
+    {
+
+    }
+
     // Reporte 3 
     // Muestra solicitudes y viajes del chofer para consulta administrativa
     public function driverHistory(DriverHistoryRequest $request, User $driver)
