@@ -146,6 +146,11 @@ Route::post('vehicleRequests/directAssignment', [VehicleRequestController::class
     ->middleware(['auth:sanctum', 'can:directAssignment,App\Models\VehicleRequest']);
 
 
+Route::get('reports/vehicles/availability', [ReportController::class, 'vehicleAvailability'])
+    ->middleware(['auth:sanctum', 'can:viewVehicleAvailability,App\Models\Vehicle']);
+
+Route::get('reports/vehicles/{vehicle}/history', [ReportController::class, 'vehicleHistory'])
+    ->middleware(['auth:sanctum', 'can:viewVehicleHistory,vehicle']);
 
 Route::get('reports/drivers/{driver}/history', [ReportController::class, 'driverHistory'])
     ->middleware(['auth:sanctum', 'can:viewDriverHistory,driver']);

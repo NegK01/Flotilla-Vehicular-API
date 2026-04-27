@@ -69,6 +69,20 @@ class VehiclePolicy
             : Response::deny('El usuario no esta autorizado para reactivar un vehiculo.');
     }
 
+    public function viewVehicleAvailability(User $user): Response
+    {
+        return $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para ver el reporte de vehiculos disponibles.');
+    }
+
+    public function viewVehicleHistory(User $user, Vehicle $model): Response
+    {
+        return $user->role_id === 1
+            ? Response::allow()
+            : Response::deny('El usuario no esta autorizado para ver el reporte de historial del vehiculo.');
+    }
+
     /**
      * Determine whether the user can permanently delete the model.
      */
