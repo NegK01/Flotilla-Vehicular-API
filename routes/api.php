@@ -132,7 +132,6 @@ Route::patch('vehicleRequests/{vehicleRequest}/restore', [VehicleRequestControll
     ->middleware(['auth:sanctum', 'can:restore,vehicleRequest']);
 
     
-    
 Route::patch('vehicleRequests/{vehicleRequest}/approve', [VehicleRequestController::class, 'approve'])
     ->middleware(['auth:sanctum', 'can:approve,vehicleRequest']);
 

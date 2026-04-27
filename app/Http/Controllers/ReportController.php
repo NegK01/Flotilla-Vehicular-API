@@ -50,7 +50,38 @@ class ReportController extends Controller
     // muestra por vehículo la cantidad de viajes y los kilómetros recorridos para consulta administrativa
     public function VehicleHistory(VehicleHistoryRequest $request, Vehicle $vehicle) 
     {
+        $validated = $request->validated();
+        $start = Carbon::parse($validated['start_date'])->startOfDay();
+        $end   = Carbon::parse($validated['end_date'])->endOfDay();
 
+        $vehicleHistory = DB::table('vehicles as v')
+            ->select(
+                'v.plate',
+                'v.brand',
+                'v.model',
+                DB::raw('COUNT(t.id) as total_trips'),
+                DB::raw('SUM(fn_calculate_km_driven(t.departure_mileage, t.return_mileage)) as total_km')
+            )
+            ->leftJoin('trips as t', function ($join) use ($start, $end) {
+                $join->on('v.id', '=', 't.vehicle_id')
+                    ->whereNull('t.deleted_at')
+                    ->whereBetween('t.departure_at', [$start, $end]);
+            })
+            ->whereNull('v.deleted_at')
+            ->groupBy('v.id', 'v.plate', 'v.brand', 'v.model')
+            ->orderByDesc('total_km')
+            ->get();
+
+        return response()->json([
+            'message' => 'Reporte de historial de vehiculos hecho correctamente.',
+            'data' => [
+                'data' => $vehicleHistory,
+                'filters' => [
+                    'start_date' => $start->toDateTimeString(),
+                    'end_date'   => $end->toDateTimeString(),
+                ],
+            ],
+        ], 200);
     }
 
     // Reporte 3 
