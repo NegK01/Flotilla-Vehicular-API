@@ -48,7 +48,7 @@ class ReportController extends Controller
 
     // Reporte 2  
     // muestra por vehículo la cantidad de viajes y los kilómetros recorridos para consulta administrativa
-    public function VehicleHistory(VehicleHistoryRequest $request, Vehicle $vehicle) 
+    public function vehicleHistory(VehicleHistoryRequest $request, Vehicle $vehicle) 
     {
         $validated = $request->validated();
         $start = Carbon::parse($validated['start_date'])->startOfDay();
